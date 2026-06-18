@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>us — come in</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Mulish:wght@400;500&family=Caveat:wght@500&display=swap" rel="stylesheet" />
+<script>
+  tailwind.config = { theme: { extend: {
+    colors: { ink:'#0E1326', panel:'#161D38', amber:'#E9A24C', amberlt:'#F2C078', mist:'#F3EFE6', muted:'#8FA0C2', faint:'#5C6A8C' },
+    fontFamily: { display:['Fraunces','serif'], body:['Mulish','sans-serif'], hand:['Caveat','cursive'] },
+  }}};
+</script>
+<style>
+  body { background:
+    radial-gradient(1200px 600px at 70% -10%, #1B2342, transparent),
+    radial-gradient(900px 500px at 0% 110%, #2A2150, transparent), #0E1326; }
+  ::selection { background:#E9A24C; color:#0E1326; }
+</style>
+<body class="min-h-screen flex items-center justify-center font-body text-mist px-5">
+  <div class="w-full max-w-sm">
+    <p class="font-hand text-2xl text-amber/90 mb-2">just us —</p>
+    <h1 class="font-display text-5xl mb-8">us<span class="text-amber">.</span></h1>
+
+    <form method="post" class="space-y-3">
+      <input name="name" placeholder="your name" autocomplete="username" required
+        class="w-full rounded-xl bg-panel border border-white/10 px-4 py-3 outline-none focus:border-amber/50 placeholder:text-faint" />
+      <input name="password" type="password" placeholder="password" autocomplete="current-password" required
+        class="w-full rounded-xl bg-panel border border-white/10 px-4 py-3 outline-none focus:border-amber/50 placeholder:text-faint" />
+      {% if error %}<p class="text-sm text-amberlt">{{ error }}</p>{% endif %}
+      <button class="w-full rounded-xl bg-amber text-ink font-semibold py-3 hover:bg-amberlt transition">come in</button>
+    </form>
+
+    <p class="text-xs text-faint mt-6">a small place for two people in two time zones.</p>
+  </div>
+</body>
+</html>

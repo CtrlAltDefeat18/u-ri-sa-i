@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<!--
+  The look is unchanged. What changed: notes + photos now save to your
+  own backend (this Flask app), behind the login.
+  Cosmetic things you edit live in the CONFIG block below — names, dates,
+  songs, and your Cloudinary upload settings. Search for "EDIT ME".
+-->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>us</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Mulish:wght@300;400;500;600&family=Caveat:wght@500&display=swap" rel="stylesheet" />
+
+<script>
+  tailwind.config = { theme: { extend: {
+    colors: { ink:'#0E1326', panel:'#161D38', panel2:'#1B2342', amber:'#E9A24C', amberlt:'#F2C078', blush:'#E7A9AD', mist:'#F3EFE6', muted:'#8FA0C2', faint:'#5C6A8C' },
+    fontFamily: { display:['Fraunces','serif'], body:['Mulish','sans-serif'], hand:['Caveat','cursive'] },
+  }}};
+</script>
+
+<style>
+  html { scroll-behavior: smooth; }
+  body { background:#0E1326; }
+  .hairline { border-color: rgba(243,239,230,0.10); }
+  .lift { transition: transform .4s cubic-bezier(.2,.7,.2,1), border-color .4s; }
+  .lift:hover { transform: translateY(-4px); border-color: rgba(233,162,76,0.4); }
+  ::selection { background:#E9A24C; color:#0E1326; }
+  .sky { transition: background 1.5s ease; }
+  .reveal { opacity:0; transform: translateY(24px); transition: opacity .9s ease, transform .9s cubic-bezier(.2,.7,.2,1); }
+  .reveal.in { opacity:1; transform:none; }
+  @media (prefers-reduced-motion: reduce){ .reveal{opacity:1;transform:none;transition:none;} .lift{transition:none;} html{scroll-behavior:auto;} }
+  .stars::before { content:""; position:absolute; inset:0; pointer-events:none;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, rgba(243,239,230,.5), transparent),
+      radial-gradient(1px 1px at 70% 60%, rgba(243,239,230,.35), transparent),
+      radial-gradient(1px 1px at 45% 80%, rgba(243,239,230,.4), transparent),
+      radial-gradient(1px 1px at 85% 20%, rgba(243,239,230,.3), transparent),
+      radial-gradient(1px 1px at 10% 70%, rgba(243,239,230,.3), transparent);
+    opacity:.6; }
+  .spin { animation: sp 1s linear infinite; } @keyframes sp { to { transform: rotate(360deg); } }
+</style>
+
+<body class="bg-ink text-mist font-body antialiased">
+
+  <!-- server gives the page who's logged in + a csrf token -->
+  <script>window.SERVER = { user: {{ user_name|tojson }}, csrf: {{ csrf|tojson }} };</script>
+
+  <!-- NAV -->
+  <nav class="fixed top-0 inset-x-0 z-40 backdrop-blur-md bg-ink/70 border-b hairline">
+    <div class="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
+      <a href="#top" class="font-display text-lg tracking-tight">us<span class="text-amber">.</span></a>
+      <div class="flex items-center gap-5">
+        <div class="hidden sm:flex items-center gap-7 text-[13px] text-muted">
+          <a href="#busy" class="hover:text-mist transition">the busy</a>
+          <a href="#songs" class="hover:text-mist transition">songs</a>
+          <a href="#frame" class="hover:text-mist transition">your frame</a>
+          <a href="#notes" class="hover:text-mist transition">notes</a>
+        </div>
+        <a href="/logout" class="text-[13px] text-faint hover:text-mist transition">leave</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header id="top" class="relative overflow-hidden stars pt-28 pb-20 sm:pt-36 sm:pb-28">
+    <div class="max-w-5xl mx-auto px-5">
+      <p class="font-hand text-2xl text-amber/90 mb-6" id="dedication">for you —</p>
+      <h1 class="font-display text-[2.6rem] leading-[1.05] sm:text-7xl sm:leading-[1.02] max-w-3xl">
+        I keep saying<br>I'm <span class="italic text-amber">busy</span>.
+      </h1>
+      <p class="mt-7 text-lg sm:text-xl text-muted max-w-xl leading-relaxed">
+        So here's the busy. All of it. A window you can open whenever you
+        want, instead of waiting for me to call.
+      </p>
+
+      <div class="mt-12 grid grid-cols-2 gap-3 sm:gap-5 max-w-2xl">
+        <div class="sky rounded-2xl border hairline p-5 sm:p-6 relative overflow-hidden" id="here">
+          <p class="text-[11px] uppercase tracking-[0.2em] text-mist/70" id="hereLabel">here</p>
+          <p class="font-display text-4xl sm:text-5xl mt-2 tabular-nums" id="hereTime">—</p>
+          <p class="text-sm text-mist/70 mt-1" id="hereMeta">—</p>
+        </div>
+        <div class="sky rounded-2xl border hairline p-5 sm:p-6 relative overflow-hidden" id="there">
+          <p class="text-[11px] uppercase tracking-[0.2em] text-mist/70" id="thereLabel">there</p>
+          <p class="font-display text-4xl sm:text-5xl mt-2 tabular-nums" id="thereTime">—</p>
+          <p class="text-sm text-mist/70 mt-1" id="thereMeta">—</p>
+        </div>
+      </div>
+      <p class="mt-6 text-sm text-faint max-w-2xl" id="gap">—</p>
+
+      <div class="mt-12 flex flex-wrap gap-x-10 gap-y-6">
+        <div>
+          <p class="font-display text-4xl sm:text-5xl text-amber tabular-nums" id="daysCount">—</p>
+          <p class="text-xs uppercase tracking-[0.18em] text-muted mt-1">days, and counting</p>
+        </div>
+        <div>
+          <p class="font-display text-4xl sm:text-5xl tabular-nums" id="yearLabel">5th</p>
+          <p class="text-xs uppercase tracking-[0.18em] text-muted mt-1">year, this one</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- THE BUSY -->
+  <section id="busy" class="py-20 sm:py-28 border-t hairline">
+    <div class="max-w-5xl mx-auto px-5">
+      <div class="flex items-end justify-between flex-wrap gap-4 mb-12 reveal">
+        <h2 class="font-display text-3xl sm:text-5xl">What busy looks like</h2>
+        <p class="text-muted text-sm max-w-xs sm:text-right">The stuff I disappear into. Now you can see it instead of guessing.</p>
+      </div>
+      <div class="grid sm:grid-cols-2 gap-4" id="busyGrid"></div>
+    </div>
+  </section>
+
+  <!-- SONGS -->
+  <section id="songs" class="py-20 sm:py-28 border-t hairline">
+    <div class="max-w-5xl mx-auto px-5">
+      <div class="mb-8 reveal">
+        <h2 class="font-display text-3xl sm:text-5xl">Songs for the gap</h2>
+        <p class="text-muted text-sm mt-3 max-w-md">Paste a Spotify link — a track, an album, a whole playlist. Either of us can add to this. We'll be listening to the same thing, even if it's tomorrow there.</p>
+      </div>
+
+      <div class="rounded-2xl border hairline bg-panel p-4 mb-10 flex flex-col sm:flex-row gap-3 sm:items-center">
+        <input id="songLink" placeholder="paste a Spotify link…" class="flex-1 bg-transparent outline-none placeholder:text-faint text-mist" />
+        <input id="songNote" placeholder="why this one (optional)" class="flex-1 bg-transparent outline-none placeholder:text-faint text-mist sm:max-w-[14rem]" />
+        <button id="songAdd" class="shrink-0 rounded-full bg-amber text-ink font-semibold px-5 py-2 text-sm hover:bg-amberlt transition disabled:opacity-50">add</button>
+      </div>
+
+      <p class="font-hand text-xl text-blush/90 mb-6" id="songEmpty">(no songs yet — paste the first one)</p>
+      <div class="grid sm:grid-cols-2 gap-x-8 gap-y-10" id="songGrid"></div>
+    </div>
+  </section>
+
+  <!-- HER FRAME -->
+  <section id="frame" class="py-20 sm:py-28 border-t hairline">
+    <div class="max-w-5xl mx-auto px-5">
+      <div class="flex items-end justify-between flex-wrap gap-4 mb-10 reveal">
+        <div>
+          <h2 class="font-display text-3xl sm:text-5xl">Your frame</h2>
+          <p class="text-muted text-sm mt-3 max-w-md">You see things I don't. Put them here — Korea, the small stuff, whatever your eye lands on.</p>
+        </div>
+        <label class="cursor-pointer shrink-0 rounded-full bg-amber text-ink font-semibold px-5 py-2.5 text-sm hover:bg-amberlt transition flex items-center gap-2" id="uploadBtn">
+          <svg id="upSpin" class="hidden w-4 h-4 spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3" stroke-opacity=".3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+          <span id="upLabel">+ add a photo</span>
+          <input type="file" accept="image/*" multiple class="hidden" id="upload" />
+        </label>
+      </div>
+      <p class="font-hand text-xl text-blush/90 mb-6" id="frameNote">(your gallery — add the first one)</p>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" id="gallery"></div>
+    </div>
+  </section>
+
+  <!-- NOTES -->
+  <section id="notes" class="py-20 sm:py-28 border-t hairline">
+    <div class="max-w-3xl mx-auto px-5">
+      <h2 class="font-display text-3xl sm:text-5xl mb-8 reveal">Notes</h2>
+      <div class="rounded-2xl border hairline bg-panel p-5">
+        <textarea id="noteInput" rows="3" placeholder="leave something here…" class="w-full bg-transparent resize-none outline-none placeholder:text-faint text-mist text-lg"></textarea>
+        <div class="flex justify-end">
+          <button id="noteAdd" class="rounded-full bg-panel2 hover:bg-amber hover:text-ink border hairline px-4 py-2 text-sm transition disabled:opacity-50">pin it</button>
+        </div>
+      </div>
+      <div class="mt-8 space-y-3" id="noteList"></div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="border-t hairline py-12">
+    <div class="max-w-5xl mx-auto px-5 flex items-center justify-between flex-wrap gap-4">
+      <p class="font-display text-xl">us<span class="text-amber">.</span></p>
+      <p class="text-sm text-faint" id="footNote">— built between the time zones</p>
+    </div>
+  </footer>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   CONFIG — EDIT ME. Cosmetic things only; the data lives in the DB.
+   ═══════════════════════════════════════════════════════════════ */
+const CONFIG = {
+  you:  "your name",          // EDIT ME — shows in the footer
+  her:  "her name",           // EDIT ME — shows in the dedication
+
+  startDate: "2021-06-18",    // EDIT ME — your real anniversary (YYYY-MM-DD)
+
+  hereZone: "Africa/Johannesburg", hereCity: "Makhanda",
+  thereZone: "Asia/Seoul",         thereCity: "South Korea",  // EDIT ME — her city
+
+  busy: [
+    { tag:"building",  title:"LurniqHub",      when:"this year", body:"The maritime training thing. Offline-first, solar, for the rural Eastern Cape. It eats most of my nights." }, // EDIT ME
+    { tag:"research",  title:"The MCom",        when:"ongoing",   body:"Integrative thinking — holding two opposite ideas at once instead of picking. Slow, but it's mine." },          // EDIT ME
+    { tag:"shipping",  title:"Sites & apps",    when:"always",    body:"Whatever's in front of me. Flask, a bit of everything. This page is one of them." },                           // EDIT ME
+    { tag:"the grind", title:"Everything else", when:"—",         body:"The parts I don't talk about much. They're heavy. But I'm still here, still moving." },                         // EDIT ME
+  ],
+
+  // Cloudinary still stores the image files (the server's disk is wiped on redeploy).
+  cloudinary: {
+    cloudName:    "",            // EDIT ME — your Cloudinary cloud name
+    uploadPreset: "us_unsigned", // EDIT ME — your UNSIGNED preset name
+  },
+};
+/* ═══════════════════ end of EDIT ME ════════════════════════════ */
+
+const CL = CONFIG.cloudinary;
+const cloudOn = () => CL.cloudName && CL.cloudName.trim().length > 0;
+
+/* ---- tiny API client (same origin, csrf-protected) ---- */
+const API = {
+  async get(u){ const r=await fetch(u); if(!r.ok) throw new Error(r.status); return r.json(); },
+  async post(u, body){
+    const r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json','X-CSRF':window.SERVER.csrf},body:JSON.stringify(body||{})});
+    if(!r.ok) throw new Error((await r.text())||r.status);
+    return r.status===204 ? null : r.json();
+  },
+};
+const esc = s => (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = iso => new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+
+/* ---- two skies ---- */
+function skyFor(h){ if(h>=5&&h<8)return['#2A3354','#7E6B8F','#E9A24C']; if(h>=8&&h<17)return['#3E5A86','#6E8FBE','#BCD3EF']; if(h>=17&&h<20)return['#3A2F52','#8A5A6A','#E9A24C']; return['#0B1024','#141B36','#2A3354']; }
+function partsFor(z){ const n=new Date();
+  const t=new Intl.DateTimeFormat('en-GB',{timeZone:z,hour:'2-digit',minute:'2-digit',hour12:false}).format(n);
+  const hr=parseInt(new Intl.DateTimeFormat('en-GB',{timeZone:z,hour:'2-digit',hour12:false}).format(n),10);
+  const day=new Intl.DateTimeFormat('en-GB',{timeZone:z,weekday:'long',day:'numeric',month:'short'}).format(n);
+  return {t,hr,day}; }
+function paintSky(id,z){ const p=partsFor(z); const[a,b,c]=skyFor(p.hr); document.getElementById(id).style.background=`linear-gradient(150deg, ${a}, ${b} 70%, ${c})`; return p; }
+function feel(h){ if(h>=5&&h<8)return"sunrise"; if(h>=8&&h<12)return"morning"; if(h>=12&&h<17)return"afternoon"; if(h>=17&&h<20)return"golden hour"; if(h>=20&&h<24)return"evening"; return"deep night"; }
+function tick(){
+  const h=paintSky('here',CONFIG.hereZone), t=paintSky('there',CONFIG.thereZone);
+  hereLabel.textContent=CONFIG.hereCity; thereLabel.textContent=CONFIG.thereCity;
+  hereTime.textContent=h.t; hereMeta.textContent=`${h.day} · ${feel(h.hr)}`;
+  thereTime.textContent=t.t; thereMeta.textContent=`${t.day} · ${feel(t.hr)}`;
+  const diff=((t.hr-h.hr)+24)%24;
+  gap.textContent = diff===0 ? "Right now we're somehow in the same hour. Rare."
+    : `${diff} hours ahead of me. When I'm winding down, you're already into ${feel(t.hr)}.`;
+}
+
+/* ---- counters ---- */
+function counters(){
+  const start=new Date(CONFIG.startDate+"T00:00:00");
+  const days=Math.floor((Date.now()-start)/86400000);
+  daysCount.textContent=days.toLocaleString();
+  const yrs=Math.floor(days/365)+1;
+  const ord=n=>n+(["th","st","nd","rd"][(n%100>10&&n%100<14)?0:(n%10<4?n%10:0)]||"th");
+  yearLabel.textContent=ord(yrs);
+  dedication.textContent=`for ${CONFIG.her} —`;
+  footNote.textContent=`— ${CONFIG.you}, built between the time zones`;
+}
+
+/* ---- busy ---- */
+function busy(){ busyGrid.innerHTML=CONFIG.busy.map(p=>`
+  <article class="lift rounded-2xl border hairline bg-panel p-6 reveal">
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-[11px] uppercase tracking-[0.18em] text-amber">${esc(p.tag)}</span>
+      <span class="text-xs text-faint">${esc(p.when)}</span>
+    </div>
+    <h3 class="font-display text-2xl mb-2">${esc(p.title)}</h3>
+    <p class="text-muted text-[15px] leading-relaxed">${esc(p.body)}</p>
+  </article>`).join(''); observe(); }
+
+/* ---- songs: shared playlist backed by /api/songs ---- */
+const EMBED_H = { track:152, episode:232, album:352, playlist:352, show:352 };
+function renderSongs(rows){
+  if(!rows.length){ songGrid.innerHTML=''; songEmpty.style.display='block'; return; }
+  songEmpty.style.display='none';
+  songGrid.innerHTML = rows.map(s=>`
+    <div class="group relative">
+      <iframe style="border-radius:12px" loading="lazy"
+        src="https://open.spotify.com/embed/${s.kind}/${encodeURIComponent(s.sid)}?theme=0"
+        width="100%" height="${EMBED_H[s.kind]||352}" frameborder="0"
+        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture"></iframe>
+      <div class="flex items-start justify-between mt-3 gap-3">
+        <p class="font-hand text-xl text-blush/90">${s.note?esc(s.note):''}<span class="text-faint text-sm font-body"> ${s.note?'· ':''}${esc(s.author)}</span></p>
+        <button data-sdel="${s.id}" class="shrink-0 text-xs text-faint hover:text-blush opacity-0 group-hover:opacity-100 transition mt-1">remove</button>
+      </div>
+    </div>`).join('');
+}
+async function loadSongs(){ try{ renderSongs(await API.get('/api/songs')); }catch(e){} }
+songAdd.addEventListener('click', async ()=>{
+  const link=songLink.value.trim(); if(!link) return;
+  songAdd.disabled=true;
+  try{
+    await API.post('/api/songs',{link, note:songNote.value.trim()});
+    songLink.value=''; songNote.value=''; await loadSongs();
+  }catch(e){
+    let msg='Could not add that.';
+    try{ msg = JSON.parse(e.message).error || msg; }catch(_){}
+    alert(msg);
+  }finally{ songAdd.disabled=false; }
+});
+songGrid.addEventListener('click', async (e)=>{
+  const id=e.target.getAttribute('data-sdel'); if(!id) return;
+  try{ await API.post(`/api/songs/${id}/delete`); await loadSongs(); }catch(_){}
+});
+
+/* ---- notes (backed by /api/notes) ---- */
+function renderNotes(rows){
+  noteList.innerHTML = rows.map(n=>`
+    <div class="rounded-2xl border hairline bg-panel/60 p-4 group">
+      <p class="text-lg leading-relaxed whitespace-pre-wrap">${esc(n.body)}</p>
+      <div class="flex items-center justify-between mt-2">
+        <p class="text-xs text-faint">${esc(n.author)} · ${fmt(n.created)}</p>
+        <button data-del="${n.id}" class="text-xs text-faint hover:text-blush opacity-0 group-hover:opacity-100 transition">remove</button>
+      </div>
+    </div>`).join('');
+}
+async function loadNotes(){ try{ renderNotes(await API.get('/api/notes')); }catch(e){} }
+noteAdd.addEventListener('click', async ()=>{
+  const v=noteInput.value.trim(); if(!v) return;
+  noteAdd.disabled=true;
+  try{ await API.post('/api/notes',{body:v}); noteInput.value=''; await loadNotes(); }
+  catch(e){ alert('Could not save that note.'); }
+  finally{ noteAdd.disabled=false; }
+});
+noteList.addEventListener('click', async (e)=>{
+  const id=e.target.getAttribute('data-del'); if(!id) return;
+  try{ await API.post(`/api/notes/${id}/delete`); await loadNotes(); }catch(_){}
+});
+
+/* ---- gallery (backed by /api/photos; files on Cloudinary) ---- */
+let photos=[];
+function renderGallery(){
+  if(!photos.length){ gallery.innerHTML=''; frameNote.style.display='block'; return; }
+  frameNote.style.display='none';
+  gallery.innerHTML = photos.map(p=>`
+    <figure class="lift rounded-xl overflow-hidden border hairline aspect-[4/5] bg-panel relative group">
+      <img src="${p.url}" alt="${esc(p.caption||'photo')}" loading="lazy" class="w-full h-full object-cover" />
+      <button data-pdel="${p.id}" class="absolute top-2 right-2 bg-ink/70 backdrop-blur rounded-full w-7 h-7 text-mist opacity-0 group-hover:opacity-100 transition">✕</button>
+    </figure>`).join('');
+}
+async function loadGallery(){ try{ photos=await API.get('/api/photos'); renderGallery(); }catch(e){} }
+function busyBtn(on){ upSpin.classList.toggle('hidden',!on); upLabel.textContent=on?'uploading…':'+ add a photo'; upload.disabled=on; }
+async function uploadToCloudinary(file){
+  const fd=new FormData(); fd.append('file',file); fd.append('upload_preset',CL.uploadPreset);
+  const r=await fetch(`https://api.cloudinary.com/v1_1/${CL.cloudName}/image/upload`,{method:'POST',body:fd});
+  if(!r.ok) throw new Error('Cloudinary rejected the upload — check the preset & cloud name.');
+  return r.json();
+}
+upload.addEventListener('change', async (e)=>{
+  const files=[...e.target.files]; e.target.value='';
+  if(!files.length) return;
+  if(!cloudOn()){ alert('Add your Cloudinary cloud name in CONFIG to upload photos.'); return; }
+  busyBtn(true);
+  try{
+    for(const f of files){
+      const up=await uploadToCloudinary(f);
+      const saved=await API.post('/api/photos',{url:up.secure_url, public_id:up.public_id, caption:''});
+      photos.unshift(saved); renderGallery();
+    }
+  }catch(err){ alert(err.message||'Upload failed.'); }
+  finally{ busyBtn(false); }
+});
+gallery.addEventListener('click', async (e)=>{
+  const id=e.target.getAttribute('data-pdel'); if(!id) return;
+  try{ await API.post(`/api/photos/${id}/delete`); photos=photos.filter(p=>String(p.id)!==String(id)); renderGallery(); }catch(_){}
+});
+
+/* ---- reveal ---- */
+let io;
+function observe(){ io=io||new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target);}}),{threshold:0.12});
+  document.querySelectorAll('.reveal:not(.in)').forEach(el=>io.observe(el)); }
+
+/* ---- boot ---- */
+counters(); busy(); observe();
+tick(); setInterval(tick,30000);
+loadSongs(); loadNotes(); loadGallery();
+</script>
+</body>
+</html>
