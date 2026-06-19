@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <!--
-  The look is unchanged. What changed: notes + photos now save to your
+  The look is unchanged. Changes: notes + photos now save to your
   own backend (this Flask app), behind the login.
   Cosmetic things you edit live in the CONFIG block below — names, dates,
   songs, and your Cloudinary upload settings. Search for "EDIT ME".
