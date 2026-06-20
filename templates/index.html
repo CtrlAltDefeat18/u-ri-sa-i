@@ -88,10 +88,24 @@
   .nav-link.active::after { content:""; position:absolute; left:0; right:0; bottom:-4px; height:2px; background: rgb(var(--accent)); border-radius:2px; }
 
   .spin { animation: sp 1s linear infinite; } @keyframes sp { to { transform: rotate(360deg); } }
-  .bob { animation: bob 3s ease-in-out infinite; } @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+  /* mascot motion (only one transform-animation at a time) */
+  .mascot-rest   { animation: bob 3.4s ease-in-out infinite; transform-origin:bottom center; }
+  .mascot-wave   { animation: wave 1.2s ease-in-out; transform-origin:bottom center; }
+  .mascot-wiggle { animation: wiggle .55s ease-in-out; transform-origin:bottom center; }
+  @keyframes bob   { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
+  @keyframes wave  { 0%{transform:rotate(0)} 14%{transform:rotate(-10deg)} 28%{transform:rotate(8deg)} 42%{transform:rotate(-7deg)} 56%{transform:rotate(6deg)} 70%{transform:rotate(-4deg)} 100%{transform:rotate(0)} }
+  @keyframes wiggle{ 0%,100%{transform:translateY(0) rotate(0)} 25%{transform:translateY(-7px) rotate(-7deg)} 50%{transform:translateY(0) rotate(7deg)} 75%{transform:translateY(-4px) rotate(-3deg)} }
+
+  /* match-3 gems */
+  .gem { aspect-ratio:1; border:none; border-radius:10px; cursor:pointer; padding:0;
+         transition: transform .12s ease, box-shadow .12s ease, opacity .15s ease; }
+  .gem:active { transform: scale(.9); }
+  .gem.sel { box-shadow: 0 0 0 3px rgb(var(--mist)); transform: scale(.88); }
 
   @media (prefers-reduced-motion: reduce) {
-    .page.active { animation:none; } .aura::before,.aura::after{ animation:none; } .bob{ animation:none; }
+    .page.active { animation:none; } .aura::before,.aura::after{ animation:none; }
+    .mascot-rest,.mascot-wave,.mascot-wiggle{ animation:none; }
     html { scroll-behavior:auto; }
   }
 </style>
@@ -265,7 +279,7 @@
   <!-- FOOTER -->
   <footer class="border-t hairline py-12 relative z-10">
     <div class="max-w-5xl mx-auto px-5 flex items-center justify-between flex-wrap gap-4">
-      <p class="font-display text-xl">us<span class="text-amber">.</span></p>
+      <p class="font-display text-xl" id="footBrand">us<span class="text-amber">.</span></p>
       <p class="text-sm text-faint" id="footNote">— built between the time zones</p>
     </div>
   </footer>
@@ -307,10 +321,34 @@
   </div>
 
   <!-- MASCOT -->
-  <button id="mascot" class="fixed bottom-5 right-5 z-40 hidden w-16 h-16 sm:w-20 sm:h-20 press" title="hi">
-    <img id="mascotImg" alt="us" class="w-full h-full object-contain bob drop-shadow-lg" />
-    <span id="mascotBubble" class="hidden absolute bottom-full right-0 mb-2 whitespace-nowrap rounded-2xl bg-panel border hairline px-3 py-1.5 text-sm text-mist font-hand"></span>
-  </button>
+  <div id="mascot" class="fixed bottom-4 right-4 z-40 hidden">
+    <div id="mascotBubble" class="hidden absolute bottom-full right-0 mb-3 w-max max-w-[230px] rounded-2xl bg-panel border hairline px-4 py-2.5 shadow-xl">
+      <p id="mascotText" class="font-hand text-lg leading-snug text-mist"></p>
+      <button id="mascotPlay" class="hidden mt-1 text-xs text-amber hover:underline press">play a game ▸</button>
+    </div>
+    <button id="mascotBtn" class="block w-28 h-28 sm:w-40 sm:h-40 press" title="hi" aria-label="mascot">
+      <img id="mascotImg" alt="us" class="w-full h-full object-contain mascot-rest drop-shadow-xl" />
+    </button>
+  </div>
+
+  <!-- GAME (easter egg) -->
+  <div id="game" class="fixed inset-0 z-[70] hidden items-center justify-center p-4 bg-ink/95 backdrop-blur">
+    <div class="w-full max-w-md">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <p class="font-display text-2xl">a little game</p>
+          <p class="text-xs text-muted">match 3 — tap a gem, then a neighbour to swap</p>
+        </div>
+        <button id="gameClose" class="text-faint hover:text-mist text-2xl press" aria-label="close">✕</button>
+      </div>
+      <div class="flex items-center justify-between mb-3 text-sm">
+        <p class="text-muted">score <span id="gameScore" class="text-mist font-semibold tabular-nums">0</span></p>
+        <p class="text-muted">best <span id="gameBest" class="text-amber font-semibold tabular-nums">0</span></p>
+        <button id="gameNew" class="press rounded-full border hairline px-3 py-1 text-xs hover:border-amber/50 transition">new board</button>
+      </div>
+      <div id="gameBoard" class="grid gap-1.5 select-none" style="grid-template-columns:repeat(8,1fr)"></div>
+    </div>
+  </div>
 
 <script>
 /* ═══════════════════════════════════════════════════════════════
@@ -336,7 +374,7 @@ const CONFIG = {
 
   // MASCOT — paste an image URL (e.g. upload your drawing to Cloudinary and use its link).
   // Leave "" to hide it. PNG with transparent background looks best.
-  mascot: "https://res.cloudinary.com/ddbulx1ok/image/upload/v1781989150/mascot_mzu2tm.png",                 // EDIT ME — your "hormone monster" drawing URL
+  mascot: "",                 // EDIT ME — your "hormone monster" drawing URL
   mascotLines: [              // little things it says when tapped (your words, edit freely)
     "she misses you, you know.",
     "go on, leave her a voice note.",
@@ -612,17 +650,119 @@ function sayGoodbye(){
 }
 document.getElementById('leaveBtn').addEventListener('click', sayGoodbye);
 
-/* ---- mascot ---- */
+/* ───────────── match-3 game (easter egg) ───────────── */
+const GEMS = ['#E9636B','#5AA9E6','#5FCF80','#F2C14E','#A98BE0','#EC8FB8'];
+const GN = 8;
+let gboard=[], gsel=null, gscore=0, gbusy=false, gbest=0;
+try{ gbest = parseInt(localStorage.getItem('us-game-best')||'0',10) || 0; }catch(e){}
+const gameEl=document.getElementById('game'), boardEl=document.getElementById('gameBoard');
+const scoreEl=document.getElementById('gameScore'), bestEl=document.getElementById('gameBest');
+const gwait = ms => new Promise(r=>setTimeout(r,ms));
+const rndGem = () => Math.floor(Math.random()*GEMS.length);
+
+function gFind(){
+  const hits=new Set();
+  for(let r=0;r<GN;r++) for(let c=0;c<GN-2;c++){ const v=gboard[r][c]; if(v==null) continue;
+    if(gboard[r][c+1]===v && gboard[r][c+2]===v){ let k=c; while(k<GN&&gboard[r][k]===v){hits.add(r+','+k);k++;} } }
+  for(let c=0;c<GN;c++) for(let r=0;r<GN-2;r++){ const v=gboard[r][c]; if(v==null) continue;
+    if(gboard[r+1][c]===v && gboard[r+2][c]===v){ let k=r; while(k<GN&&gboard[k][c]===v){hits.add(k+','+c);k++;} } }
+  return hits;
+}
+function gMake(){
+  gboard = Array.from({length:GN}, ()=> Array.from({length:GN}, rndGem));
+  let guard=0;
+  while(gFind().size && guard++<300){ for(const key of gFind()){ const [r,c]=key.split(',').map(Number); gboard[r][c]=rndGem(); } }
+}
+function gRender(){
+  boardEl.innerHTML='';
+  for(let r=0;r<GN;r++) for(let c=0;c<GN;c++){
+    const v=gboard[r][c];
+    const b=document.createElement('button');
+    b.className='gem'+(gsel&&gsel[0]===r&&gsel[1]===c?' sel':'');
+    b.style.background = v==null ? 'transparent' : GEMS[v];
+    b.dataset.r=r; b.dataset.c=c;
+    boardEl.appendChild(b);
+  }
+  scoreEl.textContent=gscore; bestEl.textContent=gbest;
+}
+async function gResolve(){
+  let combo=0, hits=gFind();
+  while(hits.size){
+    combo++; gscore += hits.size*10*combo;
+    for(const key of hits){ const [r,c]=key.split(',').map(Number); gboard[r][c]=null; }
+    gRender(); await gwait(150);
+    for(let c=0;c<GN;c++){ const col=[]; for(let r=GN-1;r>=0;r--) if(gboard[r][c]!=null) col.push(gboard[r][c]);
+      for(let r=GN-1;r>=0;r--) gboard[r][c] = (r>=GN-col.length) ? col[GN-1-r] : rndGem(); }
+    gRender(); await gwait(150);
+    hits=gFind();
+  }
+  if(gscore>gbest){ gbest=gscore; try{ localStorage.setItem('us-game-best', String(gbest)); }catch(e){} }
+  gRender();
+}
+boardEl.addEventListener('click', async (e)=>{
+  if(gbusy) return;
+  const cell=e.target.closest('.gem'); if(!cell) return;
+  const r=+cell.dataset.r, c=+cell.dataset.c;
+  if(!gsel){ gsel=[r,c]; gRender(); return; }
+  if(gsel[0]===r&&gsel[1]===c){ gsel=null; gRender(); return; }
+  if((Math.abs(gsel[0]-r)+Math.abs(gsel[1]-c))!==1){ gsel=[r,c]; gRender(); return; }
+  gbusy=true; const a=gsel, b=[r,c]; gsel=null;
+  [gboard[a[0]][a[1]],gboard[b[0]][b[1]]]=[gboard[b[0]][b[1]],gboard[a[0]][a[1]]];
+  gRender(); await gwait(120);
+  if(gFind().size){ await gResolve(); }
+  else { [gboard[a[0]][a[1]],gboard[b[0]][b[1]]]=[gboard[b[0]][b[1]],gboard[a[0]][a[1]]]; gRender(); }
+  gbusy=false;
+});
+function openGame(){ if(!gboard.length) gMake(); gscore=0; gsel=null; gRender(); gameEl.classList.remove('hidden'); gameEl.classList.add('flex'); }
+function closeGame(){ gameEl.classList.add('hidden'); gameEl.classList.remove('flex'); }
+document.getElementById('gameClose').addEventListener('click', closeGame);
+document.getElementById('gameNew').addEventListener('click', ()=>{ gMake(); gscore=0; gsel=null; gRender(); });
+gameEl.addEventListener('click', e=>{ if(e.target===gameEl) closeGame(); });
+
+/* secret ways in (so it's testable before the mascot image is set):
+   triple-click the footer "us." OR press the G key */
+let _tc=0,_tt=null;
+document.getElementById('footBrand').addEventListener('click', ()=>{
+  _tc++; clearTimeout(_tt); _tt=setTimeout(()=>{ _tc=0; }, 600);
+  if(_tc>=3){ _tc=0; openGame(); }
+});
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){ closeGame(); settings.classList.add('hidden'); }
+  const typing = /^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName||'');
+  if(!typing && (e.key==='g'||e.key==='G')) openGame();
+});
+
+/* ───────────── mascot ───────────── */
 (function(){
   if(!CONFIG.mascot) return;
-  const m=document.getElementById('mascot'), img=document.getElementById('mascotImg'), bub=document.getElementById('mascotBubble');
-  img.src=CONFIG.mascot; m.classList.remove('hidden');
-  m.addEventListener('click', ()=>{
-    const lines=CONFIG.mascotLines||[]; if(!lines.length) return;
-    bub.textContent=lines[Math.floor(Math.random()*lines.length)];
-    bub.classList.remove('hidden');
-    clearTimeout(m._t); m._t=setTimeout(()=> bub.classList.add('hidden'), 3500);
+  const wrap=document.getElementById('mascot'), btn=document.getElementById('mascotBtn'), img=document.getElementById('mascotImg');
+  const bubble=document.getElementById('mascotBubble'), text=document.getElementById('mascotText'), playBtn=document.getElementById('mascotPlay');
+  img.src=CONFIG.mascot; wrap.classList.remove('hidden');
+  let taps=0, hideT=null;
+
+  function anim(cls, ms){
+    img.classList.remove('mascot-rest','mascot-wave','mascot-wiggle');
+    void img.offsetWidth;                 // restart the animation
+    img.classList.add(cls);
+    if(cls!=='mascot-rest') setTimeout(()=>{ img.classList.remove(cls); img.classList.add('mascot-rest'); }, ms);
+  }
+  anim('mascot-rest',0);
+  setTimeout(()=> anim('mascot-wave',1200), 900);   // wave hello on arrival
+
+  btn.addEventListener('click', ()=>{
+    anim('mascot-wiggle',550);
+    const lines=CONFIG.mascotLines||['hey.'];
+    text.textContent = lines[Math.floor(Math.random()*lines.length)];
+    taps++;
+    playBtn.classList.toggle('hidden', taps<3);       // game reveals itself after a few taps
+    bubble.classList.remove('hidden');
+    clearTimeout(hideT); hideT=setTimeout(()=> bubble.classList.add('hidden'), 4500);
+    /* ── FUTURE AI HOOK ──
+       Later, swap the random phrase for a real conversation: open a chat panel here,
+       POST the user's message to a backend /api/chat route, stream the reply into the
+       bubble, optionally speak it with speechSynthesis. The structure's ready for it. */
   });
+  playBtn.addEventListener('click', e=>{ e.stopPropagation(); bubble.classList.add('hidden'); openGame(); });
 })();
 
 /* ---- boot ---- */
