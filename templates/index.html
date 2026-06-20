@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <!--
-  The look is unchanged. Changes: notes + photos now save to your
+  The look is unchanged. What changed: notes + photos now save to your
   own backend (this Flask app), behind the login.
   Cosmetic things you edit live in the CONFIG block below — names, dates,
   songs, and your Cloudinary upload settings. Search for "EDIT ME".
@@ -137,19 +137,58 @@
   <!-- HER FRAME -->
   <section id="frame" class="py-20 sm:py-28 border-t hairline">
     <div class="max-w-5xl mx-auto px-5">
-      <div class="flex items-end justify-between flex-wrap gap-4 mb-10 reveal">
-        <div>
-          <h2 class="font-display text-3xl sm:text-5xl">Your frame</h2>
-          <p class="text-muted text-sm mt-3 max-w-md">You see things I don't. Put them here — Korea, the small stuff, whatever your eye lands on.</p>
-        </div>
-        <label class="cursor-pointer shrink-0 rounded-full bg-amber text-ink font-semibold px-5 py-2.5 text-sm hover:bg-amberlt transition flex items-center gap-2" id="uploadBtn">
-          <svg id="upSpin" class="hidden w-4 h-4 spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3" stroke-opacity=".3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
-          <span id="upLabel">+ add a photo</span>
-          <input type="file" accept="image/*" multiple class="hidden" id="upload" />
-        </label>
+      <div class="mb-12 reveal">
+        <h2 class="font-display text-3xl sm:text-5xl">Your frame</h2>
+        <p class="text-muted text-sm mt-3 max-w-md">You see things I don't. Put them here — Korea, the small stuff, whatever your eye lands on.</p>
       </div>
-      <p class="font-hand text-xl text-blush/90 mb-6" id="frameNote">(your gallery — add the first one)</p>
-      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" id="gallery"></div>
+
+      <!-- photos -->
+      <div class="mb-16 reveal">
+        <div class="flex items-center justify-between mb-5">
+          <h3 class="font-display text-2xl">Photos</h3>
+          <label class="cursor-pointer rounded-full bg-amber text-ink font-semibold px-4 py-2 text-sm hover:bg-amberlt transition flex items-center gap-2">
+            <svg data-spin="photo" class="hidden w-4 h-4 spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3" stroke-opacity=".3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+            <span>+ photo</span>
+            <input type="file" accept="image/*" multiple class="hidden" data-up="photo" />
+          </label>
+        </div>
+        <p class="font-hand text-lg text-blush/90 mb-4" data-empty="photo">(no photos yet)</p>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" data-grid="photo"></div>
+      </div>
+
+      <!-- clips -->
+      <div class="mb-16 reveal">
+        <div class="flex items-center justify-between mb-5">
+          <h3 class="font-display text-2xl">Clips</h3>
+          <label class="cursor-pointer rounded-full bg-amber text-ink font-semibold px-4 py-2 text-sm hover:bg-amberlt transition flex items-center gap-2">
+            <svg data-spin="video" class="hidden w-4 h-4 spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3" stroke-opacity=".3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+            <span>+ video</span>
+            <input type="file" accept="video/*" multiple class="hidden" data-up="video" />
+          </label>
+        </div>
+        <p class="font-hand text-lg text-blush/90 mb-4" data-empty="video">(no clips yet)</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" data-grid="video"></div>
+      </div>
+
+      <!-- voice notes -->
+      <div class="reveal">
+        <div class="flex items-center justify-between mb-5 gap-3 flex-wrap">
+          <h3 class="font-display text-2xl">Voice notes</h3>
+          <div class="flex items-center gap-2">
+            <button id="recBtn" class="rounded-full bg-blush/90 text-ink font-semibold px-4 py-2 text-sm hover:bg-blush transition flex items-center gap-2 disabled:opacity-50">
+              <span id="recDot" class="hidden w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse"></span>
+              <span id="recLabel">● record</span>
+            </button>
+            <label class="cursor-pointer rounded-full border hairline text-mist px-4 py-2 text-sm hover:border-amber/50 transition flex items-center gap-2">
+              <svg data-spin="audio" class="hidden w-4 h-4 spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3" stroke-opacity=".3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+              <span>upload</span>
+              <input type="file" accept="audio/*" multiple class="hidden" data-up="audio" />
+            </label>
+          </div>
+        </div>
+        <p class="font-hand text-lg text-blush/90 mb-4" data-empty="audio">(no voice notes yet)</p>
+        <div class="space-y-3" data-grid="audio"></div>
+      </div>
     </div>
   </section>
 
@@ -195,10 +234,10 @@ const CONFIG = {
     { tag:"the grind", title:"Everything else", when:"—",         body:"The parts I don't talk about much. They're heavy. But I'm still here, still moving." },                         // EDIT ME
   ],
 
-  // Cloudinary still stores the image files (the server's disk is wiped on redeploy).
+  // Cloudinary stores the photo/video/audio files. Your account is already set here.
   cloudinary: {
-    cloudName:    "",            // EDIT ME — your Cloudinary cloud name
-    uploadPreset: "us_unsigned", // EDIT ME — your UNSIGNED preset name
+    cloudName:    "ddbulx1ok",   // your Cloudinary cloud name
+    uploadPreset: "us_unsigned", // must match your UNSIGNED preset's name exactly
   },
 };
 /* ═══════════════════ end of EDIT ME ════════════════════════════ */
@@ -319,42 +358,110 @@ noteList.addEventListener('click', async (e)=>{
   try{ await API.post(`/api/notes/${id}/delete`); await loadNotes(); }catch(_){}
 });
 
-/* ---- gallery (backed by /api/photos; files on Cloudinary) ---- */
-let photos=[];
-function renderGallery(){
-  if(!photos.length){ gallery.innerHTML=''; frameNote.style.display='block'; return; }
-  frameNote.style.display='none';
-  gallery.innerHTML = photos.map(p=>`
-    <figure class="lift rounded-xl overflow-hidden border hairline aspect-[4/5] bg-panel relative group">
-      <img src="${p.url}" alt="${esc(p.caption||'photo')}" loading="lazy" class="w-full h-full object-cover" />
-      <button data-pdel="${p.id}" class="absolute top-2 right-2 bg-ink/70 backdrop-blur rounded-full w-7 h-7 text-mist opacity-0 group-hover:opacity-100 transition">✕</button>
+/* ---- media: photos / clips / voice notes, backed by /api/media ---- */
+const CAPS  = { photo: 25*1024*1024, video: 100*1024*1024, audio: 16*1024*1024 };
+const CAPLBL= { photo: '25MB', video: '100MB', audio: '16MB' };
+const KINDS = ['photo','video','audio'];
+let media = { photo:[], video:[], audio:[] };
+
+function renderMedia(kind){
+  const grid  = document.querySelector(`[data-grid="${kind}"]`);
+  const empty = document.querySelector(`[data-empty="${kind}"]`);
+  const rows  = media[kind];
+  if(!rows.length){ grid.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+
+  if(kind==='audio'){
+    grid.innerHTML = rows.map(m=>`
+      <div class="rounded-2xl border hairline bg-panel/60 p-4 group flex items-center gap-4">
+        <audio src="${m.url}" controls preload="none" class="flex-1 min-w-0"></audio>
+        <div class="shrink-0 text-right">
+          <p class="text-xs text-faint whitespace-nowrap">${esc(m.author)} · ${fmt(m.created)}</p>
+          <button data-mdel="${m.id}" class="text-xs text-faint hover:text-blush opacity-0 group-hover:opacity-100 transition">remove</button>
+        </div>
+      </div>`).join('');
+    return;
+  }
+  const aspect = kind==='photo' ? 'aspect-[4/5]' : 'aspect-video';
+  const inner = m => kind==='photo'
+    ? `<img src="${m.url}" alt="${esc(m.caption||'photo')}" loading="lazy" class="w-full h-full object-cover" />`
+    : `<video src="${m.url}" controls preload="metadata" class="w-full h-full object-cover bg-black"></video>`;
+  grid.innerHTML = rows.map(m=>`
+    <figure class="lift rounded-xl overflow-hidden border hairline ${aspect} bg-panel relative group">
+      ${inner(m)}
+      <button data-mdel="${m.id}" class="absolute top-2 right-2 z-10 bg-ink/70 backdrop-blur rounded-full w-7 h-7 text-mist opacity-0 group-hover:opacity-100 transition">✕</button>
     </figure>`).join('');
 }
-async function loadGallery(){ try{ photos=await API.get('/api/photos'); renderGallery(); }catch(e){} }
-function busyBtn(on){ upSpin.classList.toggle('hidden',!on); upLabel.textContent=on?'uploading…':'+ add a photo'; upload.disabled=on; }
+async function loadMedia(){
+  try{
+    const all = await API.get('/api/media');
+    media = { photo:[], video:[], audio:[] };
+    all.forEach(m=>{ if(media[m.kind]) media[m.kind].push(m); });
+    KINDS.forEach(renderMedia);
+  }catch(e){}
+}
+function spin(kind,on){ const s=document.querySelector(`[data-spin="${kind}"]`); if(s) s.classList.toggle('hidden',!on); }
+
 async function uploadToCloudinary(file){
   const fd=new FormData(); fd.append('file',file); fd.append('upload_preset',CL.uploadPreset);
-  const r=await fetch(`https://api.cloudinary.com/v1_1/${CL.cloudName}/image/upload`,{method:'POST',body:fd});
-  if(!r.ok) throw new Error('Cloudinary rejected the upload — check the preset & cloud name.');
+  // /auto/ lets one preset accept images, video AND audio
+  const r=await fetch(`https://api.cloudinary.com/v1_1/${CL.cloudName}/auto/upload`,{method:'POST',body:fd});
+  if(!r.ok) throw new Error('Cloudinary rejected the upload — check the preset name & that its resource type is "Auto".');
   return r.json();
 }
-upload.addEventListener('change', async (e)=>{
-  const files=[...e.target.files]; e.target.value='';
-  if(!files.length) return;
-  if(!cloudOn()){ alert('Add your Cloudinary cloud name in CONFIG to upload photos.'); return; }
-  busyBtn(true);
+async function handleUpload(kind, files){
+  if(!cloudOn()){ alert('Cloudinary isn\u2019t set up yet.'); return; }
+  spin(kind,true);
   try{
     for(const f of files){
+      if(f.size > CAPS[kind]){ alert(`That ${kind} is too big — keep ${kind}s under ${CAPLBL[kind]}.`); continue; }
       const up=await uploadToCloudinary(f);
-      const saved=await API.post('/api/photos',{url:up.secure_url, public_id:up.public_id, caption:''});
-      photos.unshift(saved); renderGallery();
+      const saved=await API.post('/api/media',{kind, url:up.secure_url, public_id:up.public_id, caption:''});
+      media[kind].unshift(saved); renderMedia(kind);
     }
   }catch(err){ alert(err.message||'Upload failed.'); }
-  finally{ busyBtn(false); }
+  finally{ spin(kind,false); }
+}
+document.querySelectorAll('[data-up]').forEach(inp=>{
+  inp.addEventListener('change', e=>{
+    const kind=inp.getAttribute('data-up'); const files=[...e.target.files]; e.target.value='';
+    if(files.length) handleUpload(kind, files);
+  });
 });
-gallery.addEventListener('click', async (e)=>{
-  const id=e.target.getAttribute('data-pdel'); if(!id) return;
-  try{ await API.post(`/api/photos/${id}/delete`); photos=photos.filter(p=>String(p.id)!==String(id)); renderGallery(); }catch(_){}
+KINDS.forEach(kind=>{
+  document.querySelector(`[data-grid="${kind}"]`).addEventListener('click', async e=>{
+    const id=e.target.getAttribute('data-mdel'); if(!id) return;
+    try{
+      await API.post(`/api/media/${id}/delete`);
+      KINDS.forEach(k=>{ media[k]=media[k].filter(m=>String(m.id)!==String(id)); });
+      KINDS.forEach(renderMedia);
+    }catch(_){}
+  });
+});
+
+/* ---- voice recorder (records in-browser, uploads like an audio file) ---- */
+let recorder=null, chunks=[], recording=false;
+const recBtn=document.getElementById('recBtn'), recLabel=document.getElementById('recLabel'), recDot=document.getElementById('recDot');
+recBtn.addEventListener('click', async ()=>{
+  if(recording){ recorder.stop(); return; }
+  if(!cloudOn()){ alert('Cloudinary isn\u2019t set up yet.'); return; }
+  let stream;
+  try{ stream = await navigator.mediaDevices.getUserMedia({audio:true}); }
+  catch(_){ alert('I need mic permission to record — or use "upload" for an audio file instead.'); return; }
+  chunks=[];
+  recorder = new MediaRecorder(stream);
+  recorder.ondataavailable = ev=>{ if(ev.data && ev.data.size) chunks.push(ev.data); };
+  recorder.onstop = async ()=>{
+    stream.getTracks().forEach(t=>t.stop());
+    recording=false; recDot.classList.add('hidden'); recLabel.textContent='● record';
+    const type = (chunks[0] && chunks[0].type) || 'audio/webm';
+    const file = new File(chunks, `voicenote-${Date.now()}.webm`, {type});
+    recBtn.disabled=true;
+    try{ await handleUpload('audio', [file]); }
+    finally{ recBtn.disabled=false; }
+  };
+  recorder.start();
+  recording=true; recDot.classList.remove('hidden'); recLabel.textContent='stop';
 });
 
 /* ---- reveal ---- */
@@ -365,7 +472,7 @@ function observe(){ io=io||new IntersectionObserver(es=>es.forEach(en=>{if(en.is
 /* ---- boot ---- */
 counters(); busy(); observe();
 tick(); setInterval(tick,30000);
-loadSongs(); loadNotes(); loadGallery();
+loadSongs(); loadNotes(); loadMedia();
 </script>
 </body>
 </html>
