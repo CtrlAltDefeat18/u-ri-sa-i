@@ -81,6 +81,16 @@ class Song(db.Model):
     created = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
 
+class Media(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    kind = db.Column(db.String(10), nullable=False)      # photo / video / audio
+    url = db.Column(db.String(500), nullable=False)
+    public_id = db.Column(db.String(255))
+    caption = db.Column(db.String(280), default="")
+    author = db.Column(db.String(80), nullable=False)
+    created = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
 # ── helpers ─────────────────────────────────────────────────────────
 def current_user():
     uid = session.get("uid")
@@ -257,6 +267,55 @@ def photos_del(pid):
     p = db.session.get(Photo, pid)
     if p:
         db.session.delete(p)
+        db.session.commit()
+    return ("", 204)
+
+
+# ── media API (photos / video / audio) ──────────────────────────────
+MEDIA_KINDS = {"photo", "video", "audio"}
+
+
+def media_json(m):
+    return {"id": m.id, "kind": m.kind, "url": m.url, "caption": m.caption,
+            "author": m.author, "created": m.created.isoformat()}
+
+
+@app.get("/api/media")
+@login_required
+def media_list():
+    kind = request.args.get("kind")
+    q = Media.query
+    if kind in MEDIA_KINDS:
+        q = q.filter_by(kind=kind)
+    rows = q.order_by(Media.created.desc()).all()
+    return jsonify([media_json(m) for m in rows])
+
+
+@app.post("/api/media")
+@login_required
+def media_add():
+    check_csrf()
+    d = request.get_json(silent=True) or {}
+    kind = d.get("kind")
+    url = (d.get("url") or "").strip()
+    if kind not in MEDIA_KINDS or not url.startswith("https://"):
+        abort(400)
+    m = Media(kind=kind, url=url[:500],
+              public_id=(d.get("public_id") or "")[:255],
+              caption=(d.get("caption") or "")[:280],
+              author=current_user().name)
+    db.session.add(m)
+    db.session.commit()
+    return jsonify(media_json(m)), 201
+
+
+@app.post("/api/media/<int:mid>/delete")
+@login_required
+def media_del(mid):
+    check_csrf()
+    m = db.session.get(Media, mid)
+    if m:
+        db.session.delete(m)
         db.session.commit()
     return ("", 204)
 
