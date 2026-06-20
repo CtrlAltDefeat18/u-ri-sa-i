@@ -1,10 +1,9 @@
 <!doctype html>
 <html lang="en">
 <!--
-  The look is unchanged. What changed: notes + photos now save to your
-  own backend (this Flask app), behind the login.
-  Cosmetic things you edit live in the CONFIG block below — names, dates,
-  songs, and your Cloudinary upload settings. Search for "EDIT ME".
+  us — themed, multi-page version.
+  Edit cosmetic things in the CONFIG block (names, dates, mascot image).
+  All data lives in the backend; this file is just the face.
 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -13,61 +12,118 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Mulish:wght@300;400;500;600&family=Caveat:wght@500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Mulish:wght@300;400;500;600&family=Caveat:wght@500;600&display=swap" rel="stylesheet" />
 
 <script>
+  // colours are driven by CSS variables so themes can swap them live
   tailwind.config = { theme: { extend: {
-    colors: { ink:'#0E1326', panel:'#161D38', panel2:'#1B2342', amber:'#E9A24C', amberlt:'#F2C078', blush:'#E7A9AD', mist:'#F3EFE6', muted:'#8FA0C2', faint:'#5C6A8C' },
+    colors: {
+      ink:    'rgb(var(--ink) / <alpha-value>)',
+      panel:  'rgb(var(--panel) / <alpha-value>)',
+      panel2: 'rgb(var(--panel2) / <alpha-value>)',
+      amber:  'rgb(var(--accent) / <alpha-value>)',
+      amberlt:'rgb(var(--accent-lt) / <alpha-value>)',
+      blush:  'rgb(var(--blush) / <alpha-value>)',
+      mist:   'rgb(var(--mist) / <alpha-value>)',
+      muted:  'rgb(var(--muted) / <alpha-value>)',
+      faint:  'rgb(var(--faint) / <alpha-value>)',
+    },
     fontFamily: { display:['Fraunces','serif'], body:['Mulish','sans-serif'], hand:['Caveat','cursive'] },
   }}};
 </script>
 
 <style>
+  /* ── THEMES ── */
+  :root, [data-theme="midnight"] {
+    --ink: 14 19 38;     --panel: 22 29 56;   --panel2: 27 35 66;
+    --accent: 233 162 76; --accent-lt: 242 192 120; --blush: 231 169 173;
+    --mist: 243 239 230; --muted: 143 160 194; --faint: 92 106 140;
+    --aura1: 233 162 76; --aura2: 126 107 143;
+  }
+  [data-theme="rose"] {
+    --ink: 30 12 28;     --panel: 45 20 42;   --panel2: 56 26 52;
+    --accent: 244 114 182; --accent-lt: 249 168 212; --blush: 252 211 233;
+    --mist: 251 240 246; --muted: 199 156 184; --faint: 138 102 126;
+    --aura1: 244 114 182; --aura2: 168 85 160;
+  }
+
   html { scroll-behavior: smooth; }
-  body { background:#0E1326; }
-  .hairline { border-color: rgba(243,239,230,0.10); }
+  body { background: rgb(var(--ink)); transition: background .6s ease; }
+  .hairline { border-color: rgb(var(--mist) / 0.10); }
   .lift { transition: transform .4s cubic-bezier(.2,.7,.2,1), border-color .4s; }
-  .lift:hover { transform: translateY(-4px); border-color: rgba(233,162,76,0.4); }
-  ::selection { background:#E9A24C; color:#0E1326; }
+  .lift:hover { transform: translateY(-4px); border-color: rgb(var(--accent) / 0.45); }
+  ::selection { background: rgb(var(--accent)); color: rgb(var(--ink)); }
+  button, a, .lift { -webkit-tap-highlight-color: transparent; }
+  .press:active { transform: scale(.96); }
+
   .sky { transition: background 1.5s ease; }
-  .reveal { opacity:0; transform: translateY(24px); transition: opacity .9s ease, transform .9s cubic-bezier(.2,.7,.2,1); }
-  .reveal.in { opacity:1; transform:none; }
-  @media (prefers-reduced-motion: reduce){ .reveal{opacity:1;transform:none;transition:none;} .lift{transition:none;} html{scroll-behavior:auto;} }
-  .stars::before { content:""; position:absolute; inset:0; pointer-events:none;
+
+  /* drifting aura behind the hero */
+  .aura { position:absolute; inset:-20% -10% auto -10%; height:120%; pointer-events:none; z-index:0; opacity:.5; filter: blur(60px); }
+  .aura::before, .aura::after {
+    content:""; position:absolute; border-radius:9999px; mix-blend-mode:screen;
+  }
+  .aura::before { width:45vw; height:45vw; left:5%; top:0; background: rgb(var(--aura1) / .35); animation: drift1 18s ease-in-out infinite alternate; }
+  .aura::after  { width:40vw; height:40vw; right:5%; top:10%; background: rgb(var(--aura2) / .30); animation: drift2 22s ease-in-out infinite alternate; }
+  @keyframes drift1 { to { transform: translate(8vw, 6vh) scale(1.15); } }
+  @keyframes drift2 { to { transform: translate(-6vw, -4vh) scale(1.1); } }
+
+  .stars::before { content:""; position:absolute; inset:0; pointer-events:none; z-index:0;
     background-image:
-      radial-gradient(1px 1px at 20% 30%, rgba(243,239,230,.5), transparent),
-      radial-gradient(1px 1px at 70% 60%, rgba(243,239,230,.35), transparent),
-      radial-gradient(1px 1px at 45% 80%, rgba(243,239,230,.4), transparent),
-      radial-gradient(1px 1px at 85% 20%, rgba(243,239,230,.3), transparent),
-      radial-gradient(1px 1px at 10% 70%, rgba(243,239,230,.3), transparent);
+      radial-gradient(1px 1px at 20% 30%, rgb(var(--mist) / .5), transparent),
+      radial-gradient(1px 1px at 70% 60%, rgb(var(--mist) / .35), transparent),
+      radial-gradient(1px 1px at 45% 80%, rgb(var(--mist) / .4), transparent),
+      radial-gradient(1px 1px at 85% 20%, rgb(var(--mist) / .3), transparent),
+      radial-gradient(1px 1px at 10% 70%, rgb(var(--mist) / .3), transparent);
     opacity:.6; }
+
+  /* pages */
+  .page { display:none; }
+  .page.active { display:block; animation: pageIn .55s cubic-bezier(.2,.7,.2,1); }
+  @keyframes pageIn { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform:none; } }
+
+  /* nav active */
+  .nav-link { position:relative; }
+  .nav-link.active { color: rgb(var(--mist)); }
+  .nav-link.active::after { content:""; position:absolute; left:0; right:0; bottom:-4px; height:2px; background: rgb(var(--accent)); border-radius:2px; }
+
   .spin { animation: sp 1s linear infinite; } @keyframes sp { to { transform: rotate(360deg); } }
+  .bob { animation: bob 3s ease-in-out infinite; } @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+  @media (prefers-reduced-motion: reduce) {
+    .page.active { animation:none; } .aura::before,.aura::after{ animation:none; } .bob{ animation:none; }
+    html { scroll-behavior:auto; }
+  }
 </style>
 
-<body class="bg-ink text-mist font-body antialiased">
+<body class="bg-ink text-mist font-body antialiased min-h-screen">
 
-  <!-- server gives the page who's logged in + a csrf token -->
   <script>window.SERVER = { user: {{ user_name|tojson }}, csrf: {{ csrf|tojson }} };</script>
 
   <!-- NAV -->
   <nav class="fixed top-0 inset-x-0 z-40 backdrop-blur-md bg-ink/70 border-b hairline">
     <div class="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
-      <a href="#top" class="font-display text-lg tracking-tight">us<span class="text-amber">.</span></a>
-      <div class="flex items-center gap-5">
-        <div class="hidden sm:flex items-center gap-7 text-[13px] text-muted">
-          <a href="#busy" class="hover:text-mist transition">the busy</a>
-          <a href="#songs" class="hover:text-mist transition">songs</a>
-          <a href="#frame" class="hover:text-mist transition">your frame</a>
-          <a href="#notes" class="hover:text-mist transition">notes</a>
-        </div>
-        <a href="/logout" class="text-[13px] text-faint hover:text-mist transition">leave</a>
+      <a href="#home" class="font-display text-lg tracking-tight press">us<span class="text-amber">.</span></a>
+      <div class="flex items-center gap-4 sm:gap-6 text-[13px] text-muted">
+        <a href="#home"  class="nav-link hover:text-mist transition hidden sm:inline">home</a>
+        <a href="#busy"  class="nav-link hover:text-mist transition">the busy</a>
+        <a href="#songs" class="nav-link hover:text-mist transition">songs</a>
+        <a href="#frame" class="nav-link hover:text-mist transition">frame</a>
+        <a href="#notes" class="nav-link hover:text-mist transition">notes</a>
+        <button id="openSettings" class="hover:text-mist transition press" title="settings" aria-label="settings">
+          <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+        <button id="leaveBtn" class="text-faint hover:text-mist transition press">leave</button>
       </div>
     </div>
   </nav>
 
-  <!-- HERO -->
-  <header id="top" class="relative overflow-hidden stars pt-28 pb-20 sm:pt-36 sm:pb-28">
-    <div class="max-w-5xl mx-auto px-5">
+  <main class="relative">
+
+  <!-- HOME -->
+  <section data-page="home" class="page active relative overflow-hidden stars pt-28 pb-24 sm:pt-36 sm:pb-32 min-h-[90vh]">
+    <div class="aura"></div>
+    <div class="max-w-5xl mx-auto px-5 relative z-10">
       <p class="font-hand text-2xl text-amber/90 mb-6" id="dedication">for you —</p>
       <h1 class="font-display text-[2.6rem] leading-[1.05] sm:text-7xl sm:leading-[1.02] max-w-3xl">
         I keep saying<br>I'm <span class="italic text-amber">busy</span>.
@@ -101,13 +157,18 @@
           <p class="text-xs uppercase tracking-[0.18em] text-muted mt-1">year, this one</p>
         </div>
       </div>
+
+      <div class="mt-14 flex flex-wrap gap-3">
+        <a href="#frame" class="press rounded-full bg-amber text-ink font-semibold px-6 py-3 text-sm hover:bg-amberlt transition">see your frame</a>
+        <a href="#songs" class="press rounded-full border hairline px-6 py-3 text-sm hover:border-amber/50 transition">our songs</a>
+      </div>
     </div>
-  </header>
+  </section>
 
   <!-- THE BUSY -->
-  <section id="busy" class="py-20 sm:py-28 border-t hairline">
+  <section data-page="busy" class="page pt-28 pb-24 sm:pt-32">
     <div class="max-w-5xl mx-auto px-5">
-      <div class="flex items-end justify-between flex-wrap gap-4 mb-12 reveal">
+      <div class="flex items-end justify-between flex-wrap gap-4 mb-12">
         <h2 class="font-display text-3xl sm:text-5xl">What busy looks like</h2>
         <p class="text-muted text-sm max-w-xs sm:text-right">The stuff I disappear into. Now you can see it instead of guessing.</p>
       </div>
@@ -116,37 +177,34 @@
   </section>
 
   <!-- SONGS -->
-  <section id="songs" class="py-20 sm:py-28 border-t hairline">
+  <section data-page="songs" class="page pt-28 pb-24 sm:pt-32">
     <div class="max-w-5xl mx-auto px-5">
-      <div class="mb-8 reveal">
+      <div class="mb-8">
         <h2 class="font-display text-3xl sm:text-5xl">Songs for the gap</h2>
-        <p class="text-muted text-sm mt-3 max-w-md">Paste a Spotify link — a track, an album, a whole playlist. Either of us can add to this. We'll be listening to the same thing, even if it's tomorrow there.</p>
+        <p class="text-muted text-sm mt-3 max-w-md">Paste a Spotify link — a track, an album, a whole playlist. Either of us can add. We'll be listening to the same thing, even if it's tomorrow there.</p>
       </div>
-
       <div class="rounded-2xl border hairline bg-panel p-4 mb-10 flex flex-col sm:flex-row gap-3 sm:items-center">
         <input id="songLink" placeholder="paste a Spotify link…" class="flex-1 bg-transparent outline-none placeholder:text-faint text-mist" />
         <input id="songNote" placeholder="why this one (optional)" class="flex-1 bg-transparent outline-none placeholder:text-faint text-mist sm:max-w-[14rem]" />
-        <button id="songAdd" class="shrink-0 rounded-full bg-amber text-ink font-semibold px-5 py-2 text-sm hover:bg-amberlt transition disabled:opacity-50">add</button>
+        <button id="songAdd" class="press shrink-0 rounded-full bg-amber text-ink font-semibold px-5 py-2 text-sm hover:bg-amberlt transition disabled:opacity-50">add</button>
       </div>
-
       <p class="font-hand text-xl text-blush/90 mb-6" id="songEmpty">(no songs yet — paste the first one)</p>
       <div class="grid sm:grid-cols-2 gap-x-8 gap-y-10" id="songGrid"></div>
     </div>
   </section>
 
-  <!-- HER FRAME -->
-  <section id="frame" class="py-20 sm:py-28 border-t hairline">
+  <!-- FRAME -->
+  <section data-page="frame" class="page pt-28 pb-24 sm:pt-32">
     <div class="max-w-5xl mx-auto px-5">
-      <div class="mb-12 reveal">
+      <div class="mb-12">
         <h2 class="font-display text-3xl sm:text-5xl">Your frame</h2>
         <p class="text-muted text-sm mt-3 max-w-md">You see things I don't. Put them here — Korea, the small stuff, whatever your eye lands on.</p>
       </div>
 
-      <!-- photos -->
-      <div class="mb-16 reveal">
+      <div class="mb-16">
         <div class="flex items-center justify-between mb-5">
           <h3 class="font-display text-2xl">Photos</h3>
-          <label class="cursor-pointer rounded-full bg-amber text-ink font-semibold px-4 py-2 text-sm hover:bg-amberlt transition flex items-center gap-2">
+          <label class="press cursor-pointer rounded-full bg-amber text-ink font-semibold px-4 py-2 text-sm hover:bg-amberlt transition flex items-center gap-2">
             <svg data-spin="photo" class="hidden w-4 h-4 spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3" stroke-opacity=".3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
             <span>+ photo</span>
             <input type="file" accept="image/*" multiple class="hidden" data-up="photo" />
@@ -156,11 +214,10 @@
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" data-grid="photo"></div>
       </div>
 
-      <!-- clips -->
-      <div class="mb-16 reveal">
+      <div class="mb-16">
         <div class="flex items-center justify-between mb-5">
           <h3 class="font-display text-2xl">Clips</h3>
-          <label class="cursor-pointer rounded-full bg-amber text-ink font-semibold px-4 py-2 text-sm hover:bg-amberlt transition flex items-center gap-2">
+          <label class="press cursor-pointer rounded-full bg-amber text-ink font-semibold px-4 py-2 text-sm hover:bg-amberlt transition flex items-center gap-2">
             <svg data-spin="video" class="hidden w-4 h-4 spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3" stroke-opacity=".3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
             <span>+ video</span>
             <input type="file" accept="video/*" multiple class="hidden" data-up="video" />
@@ -170,16 +227,15 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" data-grid="video"></div>
       </div>
 
-      <!-- voice notes -->
-      <div class="reveal">
+      <div>
         <div class="flex items-center justify-between mb-5 gap-3 flex-wrap">
           <h3 class="font-display text-2xl">Voice notes</h3>
           <div class="flex items-center gap-2">
-            <button id="recBtn" class="rounded-full bg-blush/90 text-ink font-semibold px-4 py-2 text-sm hover:bg-blush transition flex items-center gap-2 disabled:opacity-50">
+            <button id="recBtn" class="press rounded-full bg-blush/90 text-ink font-semibold px-4 py-2 text-sm hover:bg-blush transition flex items-center gap-2 disabled:opacity-50">
               <span id="recDot" class="hidden w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse"></span>
               <span id="recLabel">● record</span>
             </button>
-            <label class="cursor-pointer rounded-full border hairline text-mist px-4 py-2 text-sm hover:border-amber/50 transition flex items-center gap-2">
+            <label class="press cursor-pointer rounded-full border hairline text-mist px-4 py-2 text-sm hover:border-amber/50 transition flex items-center gap-2">
               <svg data-spin="audio" class="hidden w-4 h-4 spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3" stroke-opacity=".3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
               <span>upload</span>
               <input type="file" accept="audio/*" multiple class="hidden" data-up="audio" />
@@ -193,13 +249,13 @@
   </section>
 
   <!-- NOTES -->
-  <section id="notes" class="py-20 sm:py-28 border-t hairline">
+  <section data-page="notes" class="page pt-28 pb-24 sm:pt-32">
     <div class="max-w-3xl mx-auto px-5">
-      <h2 class="font-display text-3xl sm:text-5xl mb-8 reveal">Notes</h2>
+      <h2 class="font-display text-3xl sm:text-5xl mb-8">Notes</h2>
       <div class="rounded-2xl border hairline bg-panel p-5">
         <textarea id="noteInput" rows="3" placeholder="leave something here…" class="w-full bg-transparent resize-none outline-none placeholder:text-faint text-mist text-lg"></textarea>
         <div class="flex justify-end">
-          <button id="noteAdd" class="rounded-full bg-panel2 hover:bg-amber hover:text-ink border hairline px-4 py-2 text-sm transition disabled:opacity-50">pin it</button>
+          <button id="noteAdd" class="press rounded-full bg-panel2 hover:bg-amber hover:text-ink border hairline px-4 py-2 text-sm transition disabled:opacity-50">pin it</button>
         </div>
       </div>
       <div class="mt-8 space-y-3" id="noteList"></div>
@@ -207,22 +263,64 @@
   </section>
 
   <!-- FOOTER -->
-  <footer class="border-t hairline py-12">
+  <footer class="border-t hairline py-12 relative z-10">
     <div class="max-w-5xl mx-auto px-5 flex items-center justify-between flex-wrap gap-4">
       <p class="font-display text-xl">us<span class="text-amber">.</span></p>
       <p class="text-sm text-faint" id="footNote">— built between the time zones</p>
     </div>
   </footer>
+  </main>
+
+  <!-- SETTINGS PANEL -->
+  <div id="settings" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" data-close></div>
+    <div class="absolute right-0 top-0 h-full w-full max-w-sm bg-panel border-l hairline p-6 overflow-y-auto">
+      <div class="flex items-center justify-between mb-8">
+        <h3 class="font-display text-2xl">Settings</h3>
+        <button data-close class="text-faint hover:text-mist text-xl press">✕</button>
+      </div>
+      <p class="text-xs uppercase tracking-[0.18em] text-muted mb-4">your theme</p>
+      <div class="grid grid-cols-2 gap-3">
+        <button data-theme-pick="midnight" class="theme-card press rounded-2xl border hairline p-4 text-left transition">
+          <div class="h-14 rounded-lg mb-3" style="background:linear-gradient(135deg,#0E1326,#1B2342 60%,#E9A24C)"></div>
+          <p class="font-display text-lg">Midnight</p>
+          <p class="text-xs text-muted">indigo & amber</p>
+        </button>
+        <button data-theme-pick="rose" class="theme-card press rounded-2xl border hairline p-4 text-left transition">
+          <div class="h-14 rounded-lg mb-3" style="background:linear-gradient(135deg,#1E0C1C,#2D142A 55%,#F472B6)"></div>
+          <p class="font-display text-lg">Rosé</p>
+          <p class="text-xs text-muted">plum & pink</p>
+        </button>
+      </div>
+      <p class="text-xs text-faint mt-6 leading-relaxed">Your pick is remembered on this device — so the two of you can each have your own look.</p>
+    </div>
+  </div>
+
+  <!-- GOODBYE OVERLAY -->
+  <div id="bye" class="fixed inset-0 z-[60] hidden items-center justify-center text-center px-6 bg-ink">
+    <div class="aura"></div>
+    <div class="relative z-10">
+      <p class="font-hand text-3xl text-amber/90 mb-4" id="byeHand">see you soon —</p>
+      <h2 class="font-display text-4xl sm:text-6xl mb-4" id="byeLine">go gently.</h2>
+      <p class="text-muted text-sm" id="bySub">signing you out…</p>
+    </div>
+  </div>
+
+  <!-- MASCOT -->
+  <button id="mascot" class="fixed bottom-5 right-5 z-40 hidden w-16 h-16 sm:w-20 sm:h-20 press" title="hi">
+    <img id="mascotImg" alt="us" class="w-full h-full object-contain bob drop-shadow-lg" />
+    <span id="mascotBubble" class="hidden absolute bottom-full right-0 mb-2 whitespace-nowrap rounded-2xl bg-panel border hairline px-3 py-1.5 text-sm text-mist font-hand"></span>
+  </button>
 
 <script>
 /* ═══════════════════════════════════════════════════════════════
-   CONFIG — EDIT ME. Cosmetic things only; the data lives in the DB.
+   CONFIG — EDIT ME. Cosmetic only; data lives in the DB.
    ═══════════════════════════════════════════════════════════════ */
 const CONFIG = {
-  you:  "your name",          // EDIT ME — shows in the footer
-  her:  "her name",           // EDIT ME — shows in the dedication
+  you:  "your name",          // EDIT ME — footer
+  her:  "her name",           // EDIT ME — dedication
 
-  startDate: "2021-06-18",    // EDIT ME — your real anniversary (YYYY-MM-DD)
+  startDate: "2022-03-15",    // EDIT ME — your anniversary (YYYY-MM-DD)
 
   hereZone: "Africa/Johannesburg", hereCity: "Makhanda",
   thereZone: "Asia/Seoul",         thereCity: "South Korea",  // EDIT ME — her city
@@ -234,18 +332,23 @@ const CONFIG = {
     { tag:"the grind", title:"Everything else", when:"—",         body:"The parts I don't talk about much. They're heavy. But I'm still here, still moving." },                         // EDIT ME
   ],
 
-  // Cloudinary stores the photo/video/audio files. Your account is already set here.
-  cloudinary: {
-    cloudName:    "ddbulx1ok",   // your Cloudinary cloud name
-    uploadPreset: "us_unsigned", // must match your UNSIGNED preset's name exactly
-  },
+  cloudinary: { cloudName: "ddbulx1ok", uploadPreset: "us_unsigned" },
+
+  // MASCOT — paste an image URL (e.g. upload your drawing to Cloudinary and use its link).
+  // Leave "" to hide it. PNG with transparent background looks best.
+  mascot: "",                 // EDIT ME — your "hormone monster" drawing URL
+  mascotLines: [              // little things it says when tapped (your words, edit freely)
+    "she misses you, you know.",
+    "go on, leave her a voice note.",
+    "text her first today. radical idea.",
+    "five years. damn.",
+  ],
 };
 /* ═══════════════════ end of EDIT ME ════════════════════════════ */
 
 const CL = CONFIG.cloudinary;
 const cloudOn = () => CL.cloudName && CL.cloudName.trim().length > 0;
 
-/* ---- tiny API client (same origin, csrf-protected) ---- */
 const API = {
   async get(u){ const r=await fetch(u); if(!r.ok) throw new Error(r.status); return r.json(); },
   async post(u, body){
@@ -256,6 +359,44 @@ const API = {
 };
 const esc = s => (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt = iso => new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+
+/* ---- THEME ---- */
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  document.querySelectorAll('[data-theme-pick]').forEach(b=>{
+    b.classList.toggle('!border-amber', b.getAttribute('data-theme-pick')===t);
+  });
+}
+function initTheme(){
+  let t='midnight';
+  try{ t = localStorage.getItem('us-theme') || 'midnight'; }catch(e){}
+  applyTheme(t);
+}
+document.querySelectorAll('[data-theme-pick]').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    const t=b.getAttribute('data-theme-pick');
+    try{ localStorage.setItem('us-theme', t); }catch(e){}
+    applyTheme(t);
+  });
+});
+const settings = document.getElementById('settings');
+document.getElementById('openSettings').addEventListener('click', ()=> settings.classList.remove('hidden'));
+settings.querySelectorAll('[data-close]').forEach(el=> el.addEventListener('click', ()=> settings.classList.add('hidden')));
+
+/* ---- ROUTER (client-side pages) ---- */
+const PAGES = ['home','busy','songs','frame','notes'];
+function showPage(name){
+  if(!PAGES.includes(name)) name='home';
+  document.querySelectorAll('[data-page]').forEach(p=>{
+    p.classList.toggle('active', p.getAttribute('data-page')===name);
+  });
+  document.querySelectorAll('.nav-link').forEach(a=>{
+    a.classList.toggle('active', a.getAttribute('href')===`#${name}`);
+  });
+  window.scrollTo({top:0, behavior:'instant' in window ? 'instant' : 'auto'});
+  if(name==='home') animateCount();
+}
+window.addEventListener('hashchange', ()=> showPage(location.hash.slice(1)));
 
 /* ---- two skies ---- */
 function skyFor(h){ if(h>=5&&h<8)return['#2A3354','#7E6B8F','#E9A24C']; if(h>=8&&h<17)return['#3E5A86','#6E8FBE','#BCD3EF']; if(h>=17&&h<20)return['#3A2F52','#8A5A6A','#E9A24C']; return['#0B1024','#141B36','#2A3354']; }
@@ -276,30 +417,41 @@ function tick(){
     : `${diff} hours ahead of me. When I'm winding down, you're already into ${feel(t.hr)}.`;
 }
 
-/* ---- counters ---- */
+/* ---- counters (with count-up animation) ---- */
+let totalDays = 0;
 function counters(){
   const start=new Date(CONFIG.startDate+"T00:00:00");
-  const days=Math.floor((Date.now()-start)/86400000);
-  daysCount.textContent=days.toLocaleString();
-  const yrs=Math.floor(days/365)+1;
+  totalDays=Math.max(0, Math.floor((Date.now()-start)/86400000));
+  const yrs=Math.floor(totalDays/365)+1;
   const ord=n=>n+(["th","st","nd","rd"][(n%100>10&&n%100<14)?0:(n%10<4?n%10:0)]||"th");
   yearLabel.textContent=ord(yrs);
   dedication.textContent=`for ${CONFIG.her} —`;
   footNote.textContent=`— ${CONFIG.you}, built between the time zones`;
+  animateCount();
+}
+function animateCount(){
+  const el=document.getElementById('daysCount'); if(!el) return;
+  const dur=1100, t0=performance.now();
+  function step(t){
+    const k=Math.min(1,(t-t0)/dur); const e=1-Math.pow(1-k,3);
+    el.textContent=Math.floor(e*totalDays).toLocaleString();
+    if(k<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
 }
 
 /* ---- busy ---- */
 function busy(){ busyGrid.innerHTML=CONFIG.busy.map(p=>`
-  <article class="lift rounded-2xl border hairline bg-panel p-6 reveal">
+  <article class="lift rounded-2xl border hairline bg-panel p-6">
     <div class="flex items-center justify-between mb-4">
       <span class="text-[11px] uppercase tracking-[0.18em] text-amber">${esc(p.tag)}</span>
       <span class="text-xs text-faint">${esc(p.when)}</span>
     </div>
     <h3 class="font-display text-2xl mb-2">${esc(p.title)}</h3>
     <p class="text-muted text-[15px] leading-relaxed">${esc(p.body)}</p>
-  </article>`).join(''); observe(); }
+  </article>`).join(''); }
 
-/* ---- songs: shared playlist backed by /api/songs ---- */
+/* ---- songs ---- */
 const EMBED_H = { track:152, episode:232, album:352, playlist:352, show:352 };
 function renderSongs(rows){
   if(!rows.length){ songGrid.innerHTML=''; songEmpty.style.display='block'; return; }
@@ -320,21 +472,16 @@ async function loadSongs(){ try{ renderSongs(await API.get('/api/songs')); }catc
 songAdd.addEventListener('click', async ()=>{
   const link=songLink.value.trim(); if(!link) return;
   songAdd.disabled=true;
-  try{
-    await API.post('/api/songs',{link, note:songNote.value.trim()});
-    songLink.value=''; songNote.value=''; await loadSongs();
-  }catch(e){
-    let msg='Could not add that.';
-    try{ msg = JSON.parse(e.message).error || msg; }catch(_){}
-    alert(msg);
-  }finally{ songAdd.disabled=false; }
+  try{ await API.post('/api/songs',{link, note:songNote.value.trim()}); songLink.value=''; songNote.value=''; await loadSongs(); }
+  catch(e){ let m='Could not add that.'; try{ m=JSON.parse(e.message).error||m; }catch(_){} alert(m); }
+  finally{ songAdd.disabled=false; }
 });
 songGrid.addEventListener('click', async (e)=>{
   const id=e.target.getAttribute('data-sdel'); if(!id) return;
   try{ await API.post(`/api/songs/${id}/delete`); await loadSongs(); }catch(_){}
 });
 
-/* ---- notes (backed by /api/notes) ---- */
+/* ---- notes ---- */
 function renderNotes(rows){
   noteList.innerHTML = rows.map(n=>`
     <div class="rounded-2xl border hairline bg-panel/60 p-4 group">
@@ -358,21 +505,19 @@ noteList.addEventListener('click', async (e)=>{
   try{ await API.post(`/api/notes/${id}/delete`); await loadNotes(); }catch(_){}
 });
 
-/* ---- media: photos / clips / voice notes, backed by /api/media ---- */
+/* ---- media: photos / clips / voice notes ---- */
 const CAPS  = { photo: 25*1024*1024, video: 100*1024*1024, audio: 16*1024*1024 };
-const CAPLBL= { photo: '25MB', video: '100MB', audio: '16MB' };
+const CAPLBL= { photo:'25MB', video:'100MB', audio:'16MB' };
 const KINDS = ['photo','video','audio'];
 let media = { photo:[], video:[], audio:[] };
-
 function renderMedia(kind){
-  const grid  = document.querySelector(`[data-grid="${kind}"]`);
-  const empty = document.querySelector(`[data-empty="${kind}"]`);
-  const rows  = media[kind];
+  const grid=document.querySelector(`[data-grid="${kind}"]`);
+  const empty=document.querySelector(`[data-empty="${kind}"]`);
+  const rows=media[kind];
   if(!rows.length){ grid.innerHTML=''; empty.style.display='block'; return; }
   empty.style.display='none';
-
   if(kind==='audio'){
-    grid.innerHTML = rows.map(m=>`
+    grid.innerHTML=rows.map(m=>`
       <div class="rounded-2xl border hairline bg-panel/60 p-4 group flex items-center gap-4">
         <audio src="${m.url}" controls preload="none" class="flex-1 min-w-0"></audio>
         <div class="shrink-0 text-right">
@@ -386,7 +531,7 @@ function renderMedia(kind){
   const inner = m => kind==='photo'
     ? `<img src="${m.url}" alt="${esc(m.caption||'photo')}" loading="lazy" class="w-full h-full object-cover" />`
     : `<video src="${m.url}" controls preload="metadata" class="w-full h-full object-cover bg-black"></video>`;
-  grid.innerHTML = rows.map(m=>`
+  grid.innerHTML=rows.map(m=>`
     <figure class="lift rounded-xl overflow-hidden border hairline ${aspect} bg-panel relative group">
       ${inner(m)}
       <button data-mdel="${m.id}" class="absolute top-2 right-2 z-10 bg-ink/70 backdrop-blur rounded-full w-7 h-7 text-mist opacity-0 group-hover:opacity-100 transition">✕</button>
@@ -394,19 +539,17 @@ function renderMedia(kind){
 }
 async function loadMedia(){
   try{
-    const all = await API.get('/api/media');
-    media = { photo:[], video:[], audio:[] };
+    const all=await API.get('/api/media');
+    media={ photo:[], video:[], audio:[] };
     all.forEach(m=>{ if(media[m.kind]) media[m.kind].push(m); });
     KINDS.forEach(renderMedia);
   }catch(e){}
 }
 function spin(kind,on){ const s=document.querySelector(`[data-spin="${kind}"]`); if(s) s.classList.toggle('hidden',!on); }
-
 async function uploadToCloudinary(file){
   const fd=new FormData(); fd.append('file',file); fd.append('upload_preset',CL.uploadPreset);
-  // /auto/ lets one preset accept images, video AND audio
   const r=await fetch(`https://api.cloudinary.com/v1_1/${CL.cloudName}/auto/upload`,{method:'POST',body:fd});
-  if(!r.ok) throw new Error('Cloudinary rejected the upload — check the preset name & that its resource type is "Auto".');
+  if(!r.ok) throw new Error('Cloudinary rejected the upload — check the preset & allowed formats.');
   return r.json();
 }
 async function handleUpload(kind, files){
@@ -431,48 +574,63 @@ document.querySelectorAll('[data-up]').forEach(inp=>{
 KINDS.forEach(kind=>{
   document.querySelector(`[data-grid="${kind}"]`).addEventListener('click', async e=>{
     const id=e.target.getAttribute('data-mdel'); if(!id) return;
-    try{
-      await API.post(`/api/media/${id}/delete`);
-      KINDS.forEach(k=>{ media[k]=media[k].filter(m=>String(m.id)!==String(id)); });
-      KINDS.forEach(renderMedia);
-    }catch(_){}
+    try{ await API.post(`/api/media/${id}/delete`); KINDS.forEach(k=>{ media[k]=media[k].filter(m=>String(m.id)!==String(id)); }); KINDS.forEach(renderMedia); }catch(_){}
   });
 });
 
-/* ---- voice recorder (records in-browser, uploads like an audio file) ---- */
+/* ---- voice recorder ---- */
 let recorder=null, chunks=[], recording=false;
 const recBtn=document.getElementById('recBtn'), recLabel=document.getElementById('recLabel'), recDot=document.getElementById('recDot');
 recBtn.addEventListener('click', async ()=>{
   if(recording){ recorder.stop(); return; }
   if(!cloudOn()){ alert('Cloudinary isn\u2019t set up yet.'); return; }
   let stream;
-  try{ stream = await navigator.mediaDevices.getUserMedia({audio:true}); }
-  catch(_){ alert('I need mic permission to record — or use "upload" for an audio file instead.'); return; }
+  try{ stream=await navigator.mediaDevices.getUserMedia({audio:true}); }
+  catch(_){ alert('I need mic permission to record — or use "upload" for an audio file.'); return; }
   chunks=[];
-  recorder = new MediaRecorder(stream);
-  recorder.ondataavailable = ev=>{ if(ev.data && ev.data.size) chunks.push(ev.data); };
-  recorder.onstop = async ()=>{
+  recorder=new MediaRecorder(stream);
+  recorder.ondataavailable=ev=>{ if(ev.data&&ev.data.size) chunks.push(ev.data); };
+  recorder.onstop=async ()=>{
     stream.getTracks().forEach(t=>t.stop());
     recording=false; recDot.classList.add('hidden'); recLabel.textContent='● record';
-    const type = (chunks[0] && chunks[0].type) || 'audio/webm';
-    const file = new File(chunks, `voicenote-${Date.now()}.webm`, {type});
+    const type=(chunks[0]&&chunks[0].type)||'audio/webm';
+    const file=new File(chunks, `voicenote-${Date.now()}.webm`, {type});
     recBtn.disabled=true;
-    try{ await handleUpload('audio', [file]); }
-    finally{ recBtn.disabled=false; }
+    try{ await handleUpload('audio',[file]); } finally{ recBtn.disabled=false; }
   };
   recorder.start();
   recording=true; recDot.classList.remove('hidden'); recLabel.textContent='stop';
 });
 
-/* ---- reveal ---- */
-let io;
-function observe(){ io=io||new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target);}}),{threshold:0.12});
-  document.querySelectorAll('.reveal:not(.in)').forEach(el=>io.observe(el)); }
+/* ---- goodbye overlay ---- */
+const BYE_LINES = ["go gently.", "come back soon.", "miss you already.", "till next time."];
+function sayGoodbye(){
+  const bye=document.getElementById('bye');
+  document.getElementById('byeLine').textContent = BYE_LINES[Math.floor(Math.random()*BYE_LINES.length)];
+  bye.classList.remove('hidden'); bye.classList.add('flex');
+  setTimeout(()=>{ window.location='/logout'; }, 2600);
+}
+document.getElementById('leaveBtn').addEventListener('click', sayGoodbye);
+
+/* ---- mascot ---- */
+(function(){
+  if(!CONFIG.mascot) return;
+  const m=document.getElementById('mascot'), img=document.getElementById('mascotImg'), bub=document.getElementById('mascotBubble');
+  img.src=CONFIG.mascot; m.classList.remove('hidden');
+  m.addEventListener('click', ()=>{
+    const lines=CONFIG.mascotLines||[]; if(!lines.length) return;
+    bub.textContent=lines[Math.floor(Math.random()*lines.length)];
+    bub.classList.remove('hidden');
+    clearTimeout(m._t); m._t=setTimeout(()=> bub.classList.add('hidden'), 3500);
+  });
+})();
 
 /* ---- boot ---- */
-counters(); busy(); observe();
+initTheme();
+counters(); busy();
 tick(); setInterval(tick,30000);
 loadSongs(); loadNotes(); loadMedia();
+showPage(location.hash.slice(1) || 'home');
 </script>
 </body>
 </html>
