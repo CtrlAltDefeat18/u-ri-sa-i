@@ -160,7 +160,7 @@
       </h1>
       <p class="mt-7 text-lg sm:text-xl text-muted max-w-xl leading-relaxed">
         So here's the busy. All of it. A window you can open whenever you
-        want, instead of waiting for me to call or wondering why I'm texting.
+        want, instead of waiting for me to call or wondering why I'm not texting.
       </p>
 
       <div class="mt-12 grid grid-cols-2 gap-3 sm:gap-5 max-w-2xl">
@@ -180,11 +180,11 @@
       <div class="mt-12 flex flex-wrap gap-x-10 gap-y-6">
         <div>
           <p class="font-display text-4xl sm:text-5xl text-amber tabular-nums" id="daysCount">—</p>
-          <p class="text-xs uppercase tracking-[0.18em] text-muted mt-1">days, and counting</p>
+          <p class="text-xs uppercase tracking-[0.18em] text-muted mt-1">days, away</p>
         </div>
         <div>
-          <p class="font-display text-4xl sm:text-5xl tabular-nums" id="yearLabel">4th</p>
-          <p class="text-xs uppercase tracking-[0.18em] text-muted mt-1">month, this one</p>
+          <p class="font-display text-4xl sm:text-5xl tabular-nums" id="yearLabel">1st</p>
+          <p class="text-xs uppercase tracking-[0.18em] text-muted mt-1">months, away</p>
         </div>
       </div>
 
@@ -409,7 +409,7 @@ const CONFIG = {
   you:  "Aphelele",          // your name (footer)
   her:  "Lebu",              // her name (dedication)
 
-  startDate: "2026-02-22",    // EDIT ME — your anniversary (YYYY-MM-DD)
+  startDate: "2026-02-25",    // the day she left for SK (YYYY-MM-DD)
 
   hereZone: "Africa/Johannesburg", hereCity: "Makhanda",
   thereZone: "Asia/Seoul",         thereCity: "South Korea",  // EDIT ME — her city
@@ -513,7 +513,7 @@ function counters(){
   totalDays=Math.max(0, Math.floor((Date.now()-start)/86400000));
   const yrs=Math.floor(totalDays/365)+1;
   const ord=n=>n+(["th","st","nd","rd"][(n%100>10&&n%100<14)?0:(n%10<4?n%10:0)]||"th");
-  yearLabel.textContent=ord(yrs);
+  yearLabel.textContent=Math.round(totalDays/30.44));
   dedication.textContent=`for ${CONFIG.her} —`;
   footNote.textContent=`— ${CONFIG.you}, built between the time zones`;
   animateCount();
