@@ -91,6 +91,37 @@ class Media(db.Model):
     created = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
 
+class Post(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(140), default="")
+    body = db.Column(db.Text, nullable=False)
+    image_url = db.Column(db.String(500), default="")
+    author = db.Column(db.String(80), nullable=False)
+    created = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class Reaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, nullable=False)
+    author = db.Column(db.String(80), nullable=False)
+    emoji = db.Column(db.String(8), nullable=False)
+
+
+class Comment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, nullable=False)
+    body = db.Column(db.String(500), nullable=False)
+    author = db.Column(db.String(80), nullable=False)
+    created = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class Feedback(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.String(1000), nullable=False)
+    author = db.Column(db.String(80), nullable=False)
+    created = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
 # ── helpers ─────────────────────────────────────────────────────────
 def current_user():
     uid = session.get("uid")
@@ -316,6 +347,142 @@ def media_del(mid):
     m = db.session.get(Media, mid)
     if m:
         db.session.delete(m)
+        db.session.commit()
+    return ("", 204)
+
+
+# ── busy feed: posts, reactions, comments ───────────────────────────
+REACTS = {"❤️", "🔥", "😮", "😂", "🥹"}
+
+
+def post_json(p, reacts, comments, me):
+    counts, mine = {}, []
+    for r in reacts:
+        if r.post_id == p.id:
+            counts[r.emoji] = counts.get(r.emoji, 0) + 1
+            if r.author == me:
+                mine.append(r.emoji)
+    cs = [{"id": c.id, "author": c.author, "body": c.body, "created": c.created.isoformat()}
+          for c in comments if c.post_id == p.id]
+    return {"id": p.id, "title": p.title, "body": p.body, "image_url": p.image_url,
+            "author": p.author, "created": p.created.isoformat(),
+            "reactions": counts, "mine": mine, "comments": cs}
+
+
+@app.get("/api/posts")
+@login_required
+def posts_list():
+    posts = Post.query.order_by(Post.created.desc()).all()
+    reacts = Reaction.query.all()
+    comments = Comment.query.order_by(Comment.created.asc()).all()
+    me = current_user().name
+    return jsonify([post_json(p, reacts, comments, me) for p in posts])
+
+
+@app.post("/api/posts")
+@login_required
+def posts_add():
+    check_csrf()
+    d = request.get_json(silent=True) or {}
+    body = (d.get("body") or "").strip()
+    title = (d.get("title") or "").strip()
+    if not body and not title:
+        abort(400)
+    img = (d.get("image_url") or "").strip()
+    if img and not img.startswith("https://"):
+        img = ""
+    p = Post(title=title[:140], body=body[:5000], image_url=img[:500],
+             author=current_user().name)
+    db.session.add(p)
+    db.session.commit()
+    return jsonify(post_json(p, [], [], current_user().name)), 201
+
+
+@app.post("/api/posts/<int:pid>/delete")
+@login_required
+def posts_del(pid):
+    check_csrf()
+    p = db.session.get(Post, pid)
+    if p:
+        Reaction.query.filter_by(post_id=pid).delete()
+        Comment.query.filter_by(post_id=pid).delete()
+        db.session.delete(p)
+        db.session.commit()
+    return ("", 204)
+
+
+@app.post("/api/posts/<int:pid>/react")
+@login_required
+def posts_react(pid):
+    check_csrf()
+    emoji = (request.get_json(silent=True) or {}).get("emoji") or ""
+    if emoji not in REACTS or not db.session.get(Post, pid):
+        abort(400)
+    me = current_user().name
+    ex = Reaction.query.filter_by(post_id=pid, author=me, emoji=emoji).first()
+    if ex:
+        db.session.delete(ex)
+    else:
+        db.session.add(Reaction(post_id=pid, author=me, emoji=emoji))
+    db.session.commit()
+    return ("", 204)
+
+
+@app.post("/api/posts/<int:pid>/comments")
+@login_required
+def comments_add(pid):
+    check_csrf()
+    body = ((request.get_json(silent=True) or {}).get("body") or "").strip()
+    if not body or not db.session.get(Post, pid):
+        abort(400)
+    c = Comment(post_id=pid, body=body[:500], author=current_user().name)
+    db.session.add(c)
+    db.session.commit()
+    return jsonify({"id": c.id, "author": c.author, "body": c.body,
+                    "created": c.created.isoformat()}), 201
+
+
+@app.post("/api/comments/<int:cid>/delete")
+@login_required
+def comments_del(cid):
+    check_csrf()
+    c = db.session.get(Comment, cid)
+    if c:
+        db.session.delete(c)
+        db.session.commit()
+    return ("", 204)
+
+
+# ── feedback thread ─────────────────────────────────────────────────
+@app.get("/api/feedback")
+@login_required
+def feedback_list():
+    rows = Feedback.query.order_by(Feedback.created.asc()).all()
+    return jsonify([{"id": f.id, "author": f.author, "body": f.body,
+                     "created": f.created.isoformat()} for f in rows])
+
+
+@app.post("/api/feedback")
+@login_required
+def feedback_add():
+    check_csrf()
+    body = ((request.get_json(silent=True) or {}).get("body") or "").strip()
+    if not body:
+        abort(400)
+    f = Feedback(body=body[:1000], author=current_user().name)
+    db.session.add(f)
+    db.session.commit()
+    return jsonify({"id": f.id, "author": f.author, "body": f.body,
+                    "created": f.created.isoformat()}), 201
+
+
+@app.post("/api/feedback/<int:fid>/delete")
+@login_required
+def feedback_del(fid):
+    check_csrf()
+    f = db.session.get(Feedback, fid)
+    if f:
+        db.session.delete(f)
         db.session.commit()
     return ("", 204)
 
