@@ -1,14 +1,3 @@
-"""
-us — the private version.
-
-Login-gated. Notes persist and are attributed. Photos live in our own
-database (behind the password), with the image files stored on Cloudinary.
-
-Locally it uses a SQLite file (us.db) so you can just run it.
-In production, set DATABASE_URL to a Postgres URL so nothing is lost on redeploy.
-See DEPLOY.md.
-"""
-
 import os
 import re
 from datetime import datetime, timezone
@@ -122,6 +111,12 @@ class Feedback(db.Model):
     created = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
 
+class Secured(db.Model):
+    # lists users who have replaced their handed-out password with their own
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), unique=True, nullable=False)
+
+
 # ── helpers ─────────────────────────────────────────────────────────
 def current_user():
     uid = session.get("uid")
@@ -167,6 +162,10 @@ def parse_spotify(link):
         return None, None
     m = SPOTIFY_RE.search(link.strip())
     return (m.group(1), m.group(2)) if m else (None, None)
+
+
+def is_secured(name):
+    return Secured.query.filter_by(name=name).first() is not None
 
 
 def seed_users():
@@ -217,10 +216,34 @@ def logout():
     return redirect(url_for("login"))
 
 
+@app.route("/set-password", methods=["GET", "POST"])
+@login_required
+def set_password():
+    u = current_user()
+    first = not is_secured(u.name)
+    error = None
+    if request.method == "POST":
+        pw = request.form.get("password") or ""
+        pw2 = request.form.get("confirm") or ""
+        if len(pw) < 6:
+            error = "Use at least 6 characters."
+        elif pw != pw2:
+            error = "Those two don't match."
+        else:
+            u.pw_hash = generate_password_hash(pw)
+            if first:
+                db.session.add(Secured(name=u.name))
+            db.session.commit()
+            return redirect(url_for("home"))
+    return render_template("set_password.html", error=error, first=first, name=u.name)
+
+
 @app.route("/")
 @login_required
 def home():
     u = current_user()
+    if not is_secured(u.name):          # first time in → must pick a private password
+        return redirect(url_for("set_password"))
     return render_template("index.html", user_name=u.name, csrf=csrf_token())
 
 
