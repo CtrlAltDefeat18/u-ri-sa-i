@@ -108,6 +108,17 @@
     .mascot-rest,.mascot-wave,.mascot-wiggle{ animation:none; }
     html { scroll-behavior:auto; }
   }
+
+  /* hide scrollbars on the swipeable nav */
+  .no-sb::-webkit-scrollbar{ display:none; }
+  .no-sb{ -ms-overflow-style:none; scrollbar-width:none; }
+
+  /* mobile performance: the big blurred aura animating is the main source of jank on phones */
+  @media (max-width: 640px) {
+    .aura { filter: blur(34px); opacity: .28; }
+    .aura::before, .aura::after { animation: none; width: 62vw; height: 62vw; }
+    .mascot-rest { animation-duration: 4.5s; }     /* lighter idle motion on phones */
+  }
 </style>
 
 <body class="bg-ink text-mist font-body antialiased min-h-screen">
@@ -118,17 +129,21 @@
   <nav class="fixed top-0 inset-x-0 z-40 backdrop-blur-md bg-ink/70 border-b hairline">
     <div class="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
       <a href="#home" class="font-display text-lg tracking-tight press">us<span class="text-amber">.</span></a>
-      <div class="flex items-center gap-4 sm:gap-6 text-[13px] text-muted">
-        <a href="#home"  class="nav-link hover:text-mist transition hidden sm:inline">home</a>
-        <a href="#busy"  class="nav-link hover:text-mist transition">the busy</a>
-        <a href="#songs" class="nav-link hover:text-mist transition">songs</a>
-        <a href="#frame" class="nav-link hover:text-mist transition">frame</a>
-        <a href="#notes" class="nav-link hover:text-mist transition">notes</a>
-        <a href="#wishes" class="nav-link hover:text-mist transition">wishes</a>
-        <button id="openSettings" class="hover:text-mist transition press" title="settings" aria-label="settings">
-          <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        </button>
-        <button id="leaveBtn" class="text-faint hover:text-mist transition press">leave</button>
+      <div class="flex items-center gap-3 min-w-0 ml-3">
+        <div class="flex items-center gap-4 sm:gap-6 text-[13px] text-muted overflow-x-auto no-sb min-w-0">
+          <a href="#home"  class="nav-link hover:text-mist transition hidden sm:inline">home</a>
+          <a href="#busy"  class="nav-link hover:text-mist transition">the busy</a>
+          <a href="#songs" class="nav-link hover:text-mist transition">songs</a>
+          <a href="#frame" class="nav-link hover:text-mist transition">frame</a>
+          <a href="#notes" class="nav-link hover:text-mist transition">notes</a>
+          <a href="#wishes" class="nav-link hover:text-mist transition">wishes</a>
+        </div>
+        <div class="flex items-center gap-4 shrink-0 text-[13px] text-muted">
+          <button id="openSettings" class="hover:text-mist transition press" title="settings" aria-label="settings">
+            <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
+          <button id="leaveBtn" class="text-faint hover:text-mist transition press">leave</button>
+        </div>
       </div>
     </div>
   </nav>
@@ -145,7 +160,7 @@
       </h1>
       <p class="mt-7 text-lg sm:text-xl text-muted max-w-xl leading-relaxed">
         So here's the busy. All of it. A window you can open whenever you
-        want, instead of waiting for me to call.
+        want, instead of waiting for me to call or wondering why I'm texting.
       </p>
 
       <div class="mt-12 grid grid-cols-2 gap-3 sm:gap-5 max-w-2xl">
@@ -168,8 +183,8 @@
           <p class="text-xs uppercase tracking-[0.18em] text-muted mt-1">days, and counting</p>
         </div>
         <div>
-          <p class="font-display text-4xl sm:text-5xl tabular-nums" id="yearLabel">5th</p>
-          <p class="text-xs uppercase tracking-[0.18em] text-muted mt-1">year, this one</p>
+          <p class="font-display text-4xl sm:text-5xl tabular-nums" id="yearLabel">4th</p>
+          <p class="text-xs uppercase tracking-[0.18em] text-muted mt-1">month, this one</p>
         </div>
       </div>
 
@@ -185,7 +200,7 @@
     <div class="max-w-2xl mx-auto px-5">
       <div class="mb-8">
         <h2 class="font-display text-3xl sm:text-5xl">What busy looks like</h2>
-        <p class="text-muted text-sm mt-3 max-w-md">The latest of what I'm building and doing. React, leave a comment — I'll see it.</p>
+        <p class="text-muted text-sm mt-3 max-w-md">The latest of what I'm building, breaking and doing. React, leave a comment.</p>
       </div>
 
       <div class="rounded-2xl border hairline bg-panel p-4 mb-8">
@@ -229,7 +244,7 @@
     <div class="max-w-5xl mx-auto px-5">
       <div class="mb-12">
         <h2 class="font-display text-3xl sm:text-5xl">Your frame</h2>
-        <p class="text-muted text-sm mt-3 max-w-md">You see things I don't. Put them here — mpuku, trash, the small stuff, whatever your eye lands on(nawe if uyafuna).</p>
+        <p class="text-muted text-sm mt-3 max-w-md">You see things I don't. Put them here — the small stuff, whatever your eye lands on.</p>
       </div>
 
       <div class="mb-16">
@@ -339,7 +354,10 @@
           <p class="text-xs text-muted">plum & pink</p>
         </button>
       </div>
-      <p class="text-xs text-faint mt-6 leading-relaxed">Your pick is remembered on this device — so two looks.</p>
+      <p class="text-xs text-faint mt-6 leading-relaxed">Your pick is remembered on this device — so there's two looks, for two people.</p>
+      <div class="mt-8 pt-6 border-t hairline">
+        <a href="/set-password" class="text-sm text-muted hover:text-mist transition">change my password →</a>
+      </div>
     </div>
   </div>
 
@@ -347,8 +365,8 @@
   <div id="bye" class="fixed inset-0 z-[60] hidden items-center justify-center text-center px-6 bg-ink">
     <div class="aura"></div>
     <div class="relative z-10">
-      <p class="font-hand text-3xl text-amber/90 mb-4" id="byeHand">see you later alligator —</p>
-      <h2 class="font-display text-4xl sm:text-6xl mb-4" id="byeLine">ube grand.</h2>
+      <p class="font-hand text-3xl text-amber/90 mb-4" id="byeHand">see you later, alligator. —</p>
+      <h2 class="font-display text-4xl sm:text-6xl mb-4" id="byeLine">Ube grand.</h2>
       <p class="text-muted text-sm" id="bySub">signing you out…</p>
     </div>
   </div>
@@ -369,7 +387,7 @@
     <div class="w-full max-w-md">
       <div class="flex items-center justify-between mb-4">
         <div>
-          <p class="font-display text-2xl">a little game-boring</p>
+          <p class="font-display text-2xl">a little game</p>
           <p class="text-xs text-muted">match 3 — tap a gem, then a neighbour to swap</p>
         </div>
         <button id="gameClose" class="text-faint hover:text-mist text-2xl press" aria-label="close">✕</button>
@@ -391,14 +409,14 @@ const CONFIG = {
   you:  "Aphelele",          // your name (footer)
   her:  "Lebu",              // her name (dedication)
 
-  startDate: "2022-03-15",    // EDIT ME — your anniversary (YYYY-MM-DD)
+  startDate: "2026-02-22",    // EDIT ME — your anniversary (YYYY-MM-DD)
 
   hereZone: "Africa/Johannesburg", hereCity: "Makhanda",
   thereZone: "Asia/Seoul",         thereCity: "South Korea",  // EDIT ME — her city
 
   busy: [
-    { tag:"building",  title:"LurniqHub",      when:"this year", body:"The maritime training thing. Offline-first, solar, for the rural Eastern Cape. It eats most of my nights." }, // EDIT ME
-    { tag:"research",  title:"The MCom",        when:"ongoing",   body:"Integrative thinking — holding two opposite ideas at once instead of picking. Slow, but it's mine." },          // EDIT ME
+    { tag:"building",  title:"The MCom & LurniqHub",      when:"this year", body:"Integrative Thinking (MCom) & The maritime training thing. Offline-first, solar, for the rural Eastern Cape. It eats most of my nights." }, // EDIT ME
+    { tag:"research",  title:"The RU Admin Block",        when:"ongoing",   body:"Flippin Registration & Outstanding Fees. Slow, haunts me, but it's being navigated." },          // EDIT ME
     { tag:"shipping",  title:"Sites & apps",    when:"always",    body:"Whatever's in front of me. Flask, a bit of everything. This page is one of them." },                           // EDIT ME
     { tag:"the grind", title:"Everything else", when:"—",         body:"The parts I don't talk about much. They're heavy. But I'm still here, still moving." },                         // EDIT ME
   ],
@@ -411,8 +429,8 @@ const CONFIG = {
   mascotLines: [              // little things it says when tapped (your words, edit freely)
     "they miss you, you know.",
     "go on, leave them a voice note.",
-    "text them first today. radical idea.",
-    "five years. damn.",
+    "maybe text them today. radical idea?",
+    "a whole year. damn.",
   ],
 };
 /* ═══════════════════ end of EDIT ME ════════════════════════════ */
@@ -512,7 +530,7 @@ function animateCount(){
 }
 
 /* ---- busy feed: posts, reactions, comments ---- */
-const REACT_EMOJI = ['❤️','🔥','😮','😂','🥹'];
+const REACT_EMOJI = ['👍','👎','🙂','🙃','😐','😢','🫡','🤓'];
 let postImgUrl = "";
 function postCard(p){
   const bar = REACT_EMOJI.map(em=>{
@@ -534,7 +552,7 @@ function postCard(p){
     ${p.title?`<h3 class="font-display text-2xl mb-1">${esc(p.title)}</h3>`:''}
     ${p.body?`<p class="text-mist leading-relaxed whitespace-pre-wrap">${esc(p.body)}</p>`:''}
     ${p.image_url?`<img src="${esc(p.image_url)}" class="rounded-xl mt-3 w-full" loading="lazy" alt="" />`:''}
-    <div class="flex items-center gap-3 mt-4">${bar}</div>
+    <div class="flex flex-wrap items-center gap-2.5 mt-4">${bar}</div>
     ${comments?`<div class="mt-4 space-y-1.5">${comments}</div>`:''}
     <div class="flex gap-2 mt-3">
       <input data-cinput="${p.id}" placeholder="comment…" class="flex-1 bg-transparent border-b hairline outline-none text-sm placeholder:text-faint py-1" />
@@ -774,7 +792,7 @@ recBtn.addEventListener('click', async ()=>{
 });
 
 /* ---- goodbye overlay ---- */
-const BYE_LINES = ["go gently.", "come back soon.", "miss you already.", "till next time."];
+const BYE_LINES = ["Ube Grand.", "come back soon.", "miss you always.", "till next time."];
 function sayGoodbye(){
   const bye=document.getElementById('bye');
   document.getElementById('byeLine').textContent = BYE_LINES[Math.floor(Math.random()*BYE_LINES.length)];
