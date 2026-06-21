@@ -169,13 +169,13 @@
         </div>
         <div>
           <p class="font-display text-4xl sm:text-5xl tabular-nums" id="yearLabel">5th</p>
-          <p class="text-xs uppercase tracking-[0.18em] text-muted mt-1">year, this one? HOPEFULLY</p>
+          <p class="text-xs uppercase tracking-[0.18em] text-muted mt-1">year, this one</p>
         </div>
       </div>
 
       <div class="mt-14 flex flex-wrap gap-3">
-        <a href="#frame" class="press rounded-full bg-amber text-ink font-semibold px-6 py-3 text-sm hover:bg-amberlt transition">check out your frame</a>
-        <a href="#songs" class="press rounded-full border hairline px-6 py-3 text-sm hover:border-amber/50 transition">umculo - Mazik</a>
+        <a href="#frame" class="press rounded-full bg-amber text-ink font-semibold px-6 py-3 text-sm hover:bg-amberlt transition">see your frame</a>
+        <a href="#songs" class="press rounded-full border hairline px-6 py-3 text-sm hover:border-amber/50 transition">our songs</a>
       </div>
     </div>
   </section>
@@ -185,7 +185,7 @@
     <div class="max-w-2xl mx-auto px-5">
       <div class="mb-8">
         <h2 class="font-display text-3xl sm:text-5xl">What busy looks like</h2>
-        <p class="text-muted text-sm mt-3 max-w-md">The latest of what I'm building and doing. React, leave a comment — silently "MMhhh...".</p>
+        <p class="text-muted text-sm mt-3 max-w-md">The latest of what I'm building and doing. React, leave a comment — I'll see it.</p>
       </div>
 
       <div class="rounded-2xl border hairline bg-panel p-4 mb-8">
@@ -211,8 +211,8 @@
   <section data-page="songs" class="page pt-28 pb-24 sm:pt-32">
     <div class="max-w-5xl mx-auto px-5">
       <div class="mb-8">
-        <h2 class="font-display text-3xl sm:text-5xl">Songs I'm currently blasting...</h2>
-        <p class="text-muted text-sm mt-3 max-w-md">Paste a Spotify link — a track, an album, a whole playlist. Either of us can add. We'll be listening to the same thing, they'll stay here - if lekaka ye database doesn't let me down.</p>
+        <h2 class="font-display text-3xl sm:text-5xl">Songs for the gap</h2>
+        <p class="text-muted text-sm mt-3 max-w-md">Paste a Spotify link — a track, an album, a whole playlist. Either of us can add. We'll be listening to the same thing, even if it's tomorrow there.</p>
       </div>
       <div class="rounded-2xl border hairline bg-panel p-4 mb-10 flex flex-col sm:flex-row gap-3 sm:items-center">
         <input id="songLink" placeholder="paste a Spotify link…" class="flex-1 bg-transparent outline-none placeholder:text-faint text-mist" />
@@ -228,8 +228,8 @@
   <section data-page="frame" class="page pt-28 pb-24 sm:pt-32">
     <div class="max-w-5xl mx-auto px-5">
       <div class="mb-12">
-        <h2 class="font-display text-3xl sm:text-5xl">A frame? for you?</h2>
-        <p class="text-muted text-sm mt-3 max-w-md">You see things I don't. Put them here — iimpuku, cig butts, birds, trash - the small stuff, whatever your eye lands on.</p>
+        <h2 class="font-display text-3xl sm:text-5xl">Your frame</h2>
+        <p class="text-muted text-sm mt-3 max-w-md">You see things I don't. Put them here — mpuku, trash, the small stuff, whatever your eye lands on(nawe if uyafuna).</p>
       </div>
 
       <div class="mb-16">
@@ -298,7 +298,7 @@
     <div class="max-w-2xl mx-auto px-5">
       <div class="mb-8">
         <h2 class="font-display text-3xl sm:text-5xl">Wishes &amp; gripes</h2>
-        <p class="text-muted text-sm mt-3 max-w-md">Anything you'd like added, anything that's broken or annoying — say it here. Ndizayibona and so something about it.</p>
+        <p class="text-muted text-sm mt-3 max-w-md">Anything you'd like added, anything that's broken or annoying — say it here. We both see this.</p>
       </div>
       <div id="fbThread" class="space-y-3 mb-4"></div>
       <p class="font-hand text-xl text-blush/90 mb-4" id="fbEmpty">(say the first thing)</p>
@@ -339,7 +339,7 @@
           <p class="text-xs text-muted">plum & pink</p>
         </button>
       </div>
-      <p class="text-xs text-faint mt-6 leading-relaxed">Your pick is remembered on this device — so the two looks?.</p>
+      <p class="text-xs text-faint mt-6 leading-relaxed">Your pick is remembered on this device — so two looks.</p>
     </div>
   </div>
 
@@ -347,7 +347,7 @@
   <div id="bye" class="fixed inset-0 z-[60] hidden items-center justify-center text-center px-6 bg-ink">
     <div class="aura"></div>
     <div class="relative z-10">
-      <p class="font-hand text-3xl text-amber/90 mb-4" id="byeHand">see you later alligator :(</p>
+      <p class="font-hand text-3xl text-amber/90 mb-4" id="byeHand">see you later alligator —</p>
       <h2 class="font-display text-4xl sm:text-6xl mb-4" id="byeLine">ube grand.</h2>
       <p class="text-muted text-sm" id="bySub">signing you out…</p>
     </div>
@@ -369,7 +369,7 @@
     <div class="w-full max-w-md">
       <div class="flex items-center justify-between mb-4">
         <div>
-          <p class="font-display text-2xl">a little game(could be better, just didn't have time)</p>
+          <p class="font-display text-2xl">a little game-boring</p>
           <p class="text-xs text-muted">match 3 — tap a gem, then a neighbour to swap</p>
         </div>
         <button id="gameClose" class="text-faint hover:text-mist text-2xl press" aria-label="close">✕</button>
@@ -409,12 +409,10 @@ const CONFIG = {
   // Leave "" to hide it. PNG with transparent background looks best.
   mascot: "https://res.cloudinary.com/ddbulx1ok/image/upload/v1781997206/HormoneMonster_dujwr4.png",  // your mascot
   mascotLines: [              // little things it says when tapped (your words, edit freely)
-    "Hi idk my name, your hormone monster - remember those????"
     "they miss you, you know.",
-    "go on, leave them a voice note? pic? note ke?.",
-    "text them first today. radical idea?",
+    "go on, leave them a voice note.",
+    "text them first today. radical idea.",
     "five years. damn.",
-    "apparently akayaz naqala nin ujola? myeke!"
   ],
 };
 /* ═══════════════════ end of EDIT ME ════════════════════════════ */
