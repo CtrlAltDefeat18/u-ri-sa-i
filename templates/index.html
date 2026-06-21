@@ -124,6 +124,7 @@
         <a href="#songs" class="nav-link hover:text-mist transition">songs</a>
         <a href="#frame" class="nav-link hover:text-mist transition">frame</a>
         <a href="#notes" class="nav-link hover:text-mist transition">notes</a>
+        <a href="#wishes" class="nav-link hover:text-mist transition">wishes</a>
         <button id="openSettings" class="hover:text-mist transition press" title="settings" aria-label="settings">
           <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </button>
@@ -164,11 +165,11 @@
       <div class="mt-12 flex flex-wrap gap-x-10 gap-y-6">
         <div>
           <p class="font-display text-4xl sm:text-5xl text-amber tabular-nums" id="daysCount">—</p>
-          <p class="text-xs uppercase tracking-[0.18em] text-muted mt-1">days, and counting:/</p>
+          <p class="text-xs uppercase tracking-[0.18em] text-muted mt-1">days, and counting</p>
         </div>
         <div>
           <p class="font-display text-4xl sm:text-5xl tabular-nums" id="yearLabel">5th</p>
-          <p class="text-xs uppercase tracking-[0.18em] text-muted mt-1">year, this one?</p>
+          <p class="text-xs uppercase tracking-[0.18em] text-muted mt-1">year, this one</p>
         </div>
       </div>
 
@@ -179,14 +180,30 @@
     </div>
   </section>
 
-  <!-- THE BUSY -->
+  <!-- THE BUSY (live feed) -->
   <section data-page="busy" class="page pt-28 pb-24 sm:pt-32">
-    <div class="max-w-5xl mx-auto px-5">
-      <div class="flex items-end justify-between flex-wrap gap-4 mb-12">
+    <div class="max-w-2xl mx-auto px-5">
+      <div class="mb-8">
         <h2 class="font-display text-3xl sm:text-5xl">What busy looks like</h2>
-        <p class="text-muted text-sm max-w-xs sm:text-right">The stuff I disappear into. Now you can see it instead of guessing.</p>
+        <p class="text-muted text-sm mt-3 max-w-md">The latest of what I'm building and doing. React, leave a comment — I'll see it.</p>
       </div>
-      <div class="grid sm:grid-cols-2 gap-4" id="busyGrid"></div>
+
+      <div class="rounded-2xl border hairline bg-panel p-4 mb-8">
+        <input id="postTitle" placeholder="title (optional)" class="w-full bg-transparent outline-none placeholder:text-faint text-mist font-display text-lg mb-2" />
+        <textarea id="postBody" rows="3" placeholder="what are you up to?" class="w-full bg-transparent resize-none outline-none placeholder:text-faint text-mist"></textarea>
+        <div id="postImgPreview" class="hidden mt-2"><img class="rounded-lg max-h-44" alt="attached" /></div>
+        <div class="flex items-center justify-between mt-2">
+          <label class="press cursor-pointer text-sm text-muted hover:text-mist transition flex items-center gap-2">
+            <svg data-spin="post" class="hidden w-4 h-4 spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3" stroke-opacity=".3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+            <span id="postImgLabel">+ photo</span>
+            <input type="file" accept="image/*" class="hidden" id="postImg" />
+          </label>
+          <button id="postAdd" class="press rounded-full bg-amber text-ink font-semibold px-5 py-2 text-sm hover:bg-amberlt transition disabled:opacity-50">post</button>
+        </div>
+      </div>
+
+      <p class="font-hand text-xl text-blush/90 mb-6" id="feedEmpty">(nothing posted yet)</p>
+      <div class="space-y-5" id="feed"></div>
     </div>
   </section>
 
@@ -194,8 +211,8 @@
   <section data-page="songs" class="page pt-28 pb-24 sm:pt-32">
     <div class="max-w-5xl mx-auto px-5">
       <div class="mb-8">
-        <h2 class="font-display text-3xl sm:text-5xl">Songs carefully selected to be here</h2>
-        <p class="text-muted text-sm mt-3 max-w-md">Paste a Spotify link — a track, an album, a whole playlist. Either of us can add. We'll be listening to the same thing, noba kunini na :(.</p>
+        <h2 class="font-display text-3xl sm:text-5xl">Songs for the gap</h2>
+        <p class="text-muted text-sm mt-3 max-w-md">Paste a Spotify link — a track, an album, a whole playlist. Either of us can add. We'll be listening to the same thing, even if it's tomorrow there.</p>
       </div>
       <div class="rounded-2xl border hairline bg-panel p-4 mb-10 flex flex-col sm:flex-row gap-3 sm:items-center">
         <input id="songLink" placeholder="paste a Spotify link…" class="flex-1 bg-transparent outline-none placeholder:text-faint text-mist" />
@@ -211,8 +228,8 @@
   <section data-page="frame" class="page pt-28 pb-24 sm:pt-32">
     <div class="max-w-5xl mx-auto px-5">
       <div class="mb-12">
-        <h2 class="font-display text-3xl sm:text-5xl">A frame?</h2>
-        <p class="text-muted text-sm mt-3 max-w-md">You see things I don't. Put them here — isikolo, birds, mpuku, whatever your eye lands on.</p>
+        <h2 class="font-display text-3xl sm:text-5xl">Your frame</h2>
+        <p class="text-muted text-sm mt-3 max-w-md">You see things I don't. Put them here — Korea, the small stuff, whatever your eye lands on.</p>
       </div>
 
       <div class="mb-16">
@@ -276,6 +293,22 @@
     </div>
   </section>
 
+  <!-- WISHES (feedback thread) -->
+  <section data-page="wishes" class="page pt-28 pb-24 sm:pt-32">
+    <div class="max-w-2xl mx-auto px-5">
+      <div class="mb-8">
+        <h2 class="font-display text-3xl sm:text-5xl">Wishes &amp; gripes</h2>
+        <p class="text-muted text-sm mt-3 max-w-md">Anything you'd like added, anything that's broken or annoying — say it here. We both see this.</p>
+      </div>
+      <div id="fbThread" class="space-y-3 mb-4"></div>
+      <p class="font-hand text-xl text-blush/90 mb-4" id="fbEmpty">(say the first thing)</p>
+      <div class="rounded-2xl border hairline bg-panel p-4 flex flex-col sm:flex-row gap-3 sm:items-end">
+        <textarea id="fbInput" rows="2" placeholder="what would make this better?" class="flex-1 bg-transparent resize-none outline-none placeholder:text-faint text-mist"></textarea>
+        <button id="fbSend" class="press shrink-0 rounded-full bg-amber text-ink font-semibold px-5 py-2 text-sm hover:bg-amberlt transition disabled:opacity-50">send</button>
+      </div>
+    </div>
+  </section>
+
   <!-- FOOTER -->
   <footer class="border-t hairline py-12 relative z-10">
     <div class="max-w-5xl mx-auto px-5 flex items-center justify-between flex-wrap gap-4">
@@ -306,7 +339,7 @@
           <p class="text-xs text-muted">plum & pink</p>
         </button>
       </div>
-      <p class="text-xs text-faint mt-6 leading-relaxed">Your pick is remembered on your device, just choose a look - andiyaz. Might add a lot more functionality later ? Hope to...</p>
+      <p class="text-xs text-faint mt-6 leading-relaxed">Your pick is remembered on this device — so the two of you can each have your own look.</p>
     </div>
   </div>
 
@@ -314,8 +347,8 @@
   <div id="bye" class="fixed inset-0 z-[60] hidden items-center justify-center text-center px-6 bg-ink">
     <div class="aura"></div>
     <div class="relative z-10">
-      <p class="font-hand text-3xl text-amber/90 mb-4" id="byeHand">see you later alligator —</p>
-      <h2 class="font-display text-4xl sm:text-6xl mb-4" id="byeLine">ube grand.</h2>
+      <p class="font-hand text-3xl text-amber/90 mb-4" id="byeHand">see you soon —</p>
+      <h2 class="font-display text-4xl sm:text-6xl mb-4" id="byeLine">go gently.</h2>
       <p class="text-muted text-sm" id="bySub">signing you out…</p>
     </div>
   </div>
@@ -337,7 +370,7 @@
       <div class="flex items-center justify-between mb-4">
         <div>
           <p class="font-display text-2xl">a little game</p>
-          <p class="text-xs text-muted">match 3 — tap a gem, then a neighbour to swap. I can build this better, I've been very undecisive and thinking of more shit to add to impress you :(</p>
+          <p class="text-xs text-muted">match 3 — tap a gem, then a neighbour to swap</p>
         </div>
         <button id="gameClose" class="text-faint hover:text-mist text-2xl press" aria-label="close">✕</button>
       </div>
@@ -355,8 +388,8 @@
    CONFIG — EDIT ME. Cosmetic only; data lives in the DB.
    ═══════════════════════════════════════════════════════════════ */
 const CONFIG = {
-  you:  "Aphelele",          // EDIT ME — footer
-  her:  "Lebu",           // EDIT ME — dedication
+  you:  "Aphelele",          // your name (footer)
+  her:  "Lebu",              // her name (dedication)
 
   startDate: "2022-03-15",    // EDIT ME — your anniversary (YYYY-MM-DD)
 
@@ -374,12 +407,12 @@ const CONFIG = {
 
   // MASCOT — paste an image URL (e.g. upload your drawing to Cloudinary and use its link).
   // Leave "" to hide it. PNG with transparent background looks best.
-  mascot: "https://res.cloudinary.com/ddbulx1ok/image/upload/v1781997206/HormoneMonster_dujwr4.png",                 // EDIT ME — your "hormone monster" drawing URL
+  mascot: "https://res.cloudinary.com/ddbulx1ok/image/upload/v1781997206/HormoneMonster_dujwr4.png",  // your mascot
   mascotLines: [              // little things it says when tapped (your words, edit freely)
-    "they miss you, you know.",
-    "go on, leave them a voice note.",
-    "text them first today. radical idea?",
-    "five years? damn.",
+    "she misses you, you know.",
+    "go on, leave her a voice note.",
+    "text her first today. radical idea.",
+    "five years. damn.",
   ],
 };
 /* ═══════════════════ end of EDIT ME ════════════════════════════ */
@@ -422,7 +455,7 @@ document.getElementById('openSettings').addEventListener('click', ()=> settings.
 settings.querySelectorAll('[data-close]').forEach(el=> el.addEventListener('click', ()=> settings.classList.add('hidden')));
 
 /* ---- ROUTER (client-side pages) ---- */
-const PAGES = ['home','busy','songs','frame','notes'];
+const PAGES = ['home','busy','songs','frame','notes','wishes'];
 function showPage(name){
   if(!PAGES.includes(name)) name='home';
   document.querySelectorAll('[data-page]').forEach(p=>{
@@ -478,16 +511,116 @@ function animateCount(){
   requestAnimationFrame(step);
 }
 
-/* ---- busy ---- */
-function busy(){ busyGrid.innerHTML=CONFIG.busy.map(p=>`
-  <article class="lift rounded-2xl border hairline bg-panel p-6">
-    <div class="flex items-center justify-between mb-4">
-      <span class="text-[11px] uppercase tracking-[0.18em] text-amber">${esc(p.tag)}</span>
-      <span class="text-xs text-faint">${esc(p.when)}</span>
+/* ---- busy feed: posts, reactions, comments ---- */
+const REACT_EMOJI = ['❤️','🔥','😮','😂','🥹'];
+let postImgUrl = "";
+function postCard(p){
+  const bar = REACT_EMOJI.map(em=>{
+    const n=p.reactions[em]||0, on=p.mine.includes(em);
+    return `<button data-react="${p.id}" data-emoji="${em}" class="press text-sm ${on?'text-mist':'text-faint'} hover:text-mist transition">${em}${n?`<span class="ml-0.5 text-xs">${n}</span>`:''}</button>`;
+  }).join('');
+  const comments = p.comments.map(c=>`
+    <div class="text-sm group/c">
+      <span class="text-amber">${esc(c.author)}</span> <span class="text-mist">${esc(c.body)}</span>
+      <span class="text-faint text-xs">· ${fmt(c.created)}</span>
+      <button data-cdel="${c.id}" class="ml-1 text-faint hover:text-blush text-xs opacity-0 group-hover/c:opacity-100">×</button>
+    </div>`).join('');
+  return `
+  <article class="rounded-2xl border hairline bg-panel p-5 group" data-post="${p.id}">
+    <div class="flex items-center justify-between mb-2">
+      <p class="text-xs text-faint">${esc(p.author)} · ${fmt(p.created)}</p>
+      <button data-pdel="${p.id}" class="text-faint hover:text-blush text-xs opacity-0 group-hover:opacity-100 transition">delete</button>
     </div>
-    <h3 class="font-display text-2xl mb-2">${esc(p.title)}</h3>
-    <p class="text-muted text-[15px] leading-relaxed">${esc(p.body)}</p>
-  </article>`).join(''); }
+    ${p.title?`<h3 class="font-display text-2xl mb-1">${esc(p.title)}</h3>`:''}
+    ${p.body?`<p class="text-mist leading-relaxed whitespace-pre-wrap">${esc(p.body)}</p>`:''}
+    ${p.image_url?`<img src="${esc(p.image_url)}" class="rounded-xl mt-3 w-full" loading="lazy" alt="" />`:''}
+    <div class="flex items-center gap-3 mt-4">${bar}</div>
+    ${comments?`<div class="mt-4 space-y-1.5">${comments}</div>`:''}
+    <div class="flex gap-2 mt-3">
+      <input data-cinput="${p.id}" placeholder="comment…" class="flex-1 bg-transparent border-b hairline outline-none text-sm placeholder:text-faint py-1" />
+      <button data-cadd="${p.id}" class="press text-sm text-amber">send</button>
+    </div>
+  </article>`;
+}
+function renderFeed(posts){
+  const feed=document.getElementById('feed'), empty=document.getElementById('feedEmpty');
+  if(!posts.length){ feed.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  feed.innerHTML = posts.map(postCard).join('');
+}
+async function loadFeed(){ try{ renderFeed(await API.get('/api/posts')); }catch(e){} }
+
+document.getElementById('postImg').addEventListener('change', async e=>{
+  const f=e.target.files[0]; e.target.value=''; if(!f) return;
+  if(!cloudOn()){ alert('Cloudinary isn\u2019t set up yet.'); return; }
+  if(f.size > 25*1024*1024){ alert('Photo too big — keep it under 25MB.'); return; }
+  spin('post',true);
+  try{
+    const up=await uploadToCloudinary(f); postImgUrl=up.secure_url;
+    const pv=document.getElementById('postImgPreview'); pv.querySelector('img').src=postImgUrl; pv.classList.remove('hidden');
+    document.getElementById('postImgLabel').textContent='photo added ✓';
+  }catch(err){ alert(err.message||'Upload failed.'); }
+  finally{ spin('post',false); }
+});
+document.getElementById('postAdd').addEventListener('click', async ()=>{
+  const title=document.getElementById('postTitle').value.trim();
+  const body=document.getElementById('postBody').value.trim();
+  if(!title && !body && !postImgUrl) return;
+  const btn=document.getElementById('postAdd'); btn.disabled=true;
+  try{
+    await API.post('/api/posts',{title, body, image_url:postImgUrl});
+    document.getElementById('postTitle').value=''; document.getElementById('postBody').value='';
+    postImgUrl=''; document.getElementById('postImgPreview').classList.add('hidden');
+    document.getElementById('postImgLabel').textContent='+ photo';
+    await loadFeed();
+  }catch(e){ alert('Could not post.'); }
+  finally{ btn.disabled=false; }
+});
+const feedEl=document.getElementById('feed');
+feedEl.addEventListener('click', async e=>{
+  const rb=e.target.closest('[data-react]');
+  if(rb){ try{ await API.post(`/api/posts/${rb.dataset.react}/react`,{emoji:rb.dataset.emoji}); await loadFeed(); }catch(_){ } return; }
+  const ca=e.target.closest('[data-cadd]');
+  if(ca){ const id=ca.dataset.cadd, inp=feedEl.querySelector(`[data-cinput="${id}"]`), v=inp.value.trim(); if(!v) return;
+    try{ await API.post(`/api/posts/${id}/comments`,{body:v}); await loadFeed(); }catch(_){ } return; }
+  const pd=e.target.closest('[data-pdel]');
+  if(pd){ if(confirm('Delete this post?')){ try{ await API.post(`/api/posts/${pd.dataset.pdel}/delete`); await loadFeed(); }catch(_){ } } return; }
+  const cd=e.target.closest('[data-cdel]');
+  if(cd){ try{ await API.post(`/api/comments/${cd.dataset.cdel}/delete`); await loadFeed(); }catch(_){ } return; }
+});
+feedEl.addEventListener('keydown', async e=>{
+  const inp=e.target.closest('[data-cinput]'); if(!inp || e.key!=='Enter') return;
+  e.preventDefault(); const id=inp.getAttribute('data-cinput'), v=inp.value.trim(); if(!v) return;
+  try{ await API.post(`/api/posts/${id}/comments`,{body:v}); await loadFeed(); }catch(_){ }
+});
+
+/* ---- feedback thread ---- */
+function renderFb(rows){
+  const t=document.getElementById('fbThread'), empty=document.getElementById('fbEmpty');
+  if(!rows.length){ t.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  const me=window.SERVER.user;
+  t.innerHTML = rows.map(f=>{
+    const mine=f.author===me;
+    return `<div class="flex ${mine?'justify-end':'justify-start'}">
+      <div class="group max-w-[82%] rounded-2xl border hairline px-4 py-2 ${mine?'bg-amber/15':'bg-panel'}">
+        <p class="text-mist whitespace-pre-wrap">${esc(f.body)}</p>
+        <p class="text-[10px] text-faint mt-1">${esc(f.author)} · ${fmt(f.created)}
+          <button data-fdel="${f.id}" class="ml-1 hover:text-blush opacity-0 group-hover:opacity-100">×</button></p>
+      </div></div>`;
+  }).join('');
+}
+async function loadFb(){ try{ renderFb(await API.get('/api/feedback')); }catch(e){} }
+document.getElementById('fbSend').addEventListener('click', async ()=>{
+  const inp=document.getElementById('fbInput'), v=inp.value.trim(); if(!v) return;
+  const btn=document.getElementById('fbSend'); btn.disabled=true;
+  try{ await API.post('/api/feedback',{body:v}); inp.value=''; await loadFb(); }
+  catch(e){ alert('Could not send.'); } finally{ btn.disabled=false; }
+});
+document.getElementById('fbThread').addEventListener('click', async e=>{
+  const d=e.target.closest('[data-fdel]'); if(!d) return;
+  try{ await API.post(`/api/feedback/${d.dataset.fdel}/delete`); await loadFb(); }catch(_){ }
+});
 
 /* ---- songs ---- */
 const EMBED_H = { track:152, episode:232, album:352, playlist:352, show:352 };
@@ -767,9 +900,9 @@ document.addEventListener('keydown', e=>{
 
 /* ---- boot ---- */
 initTheme();
-counters(); busy();
+counters();
 tick(); setInterval(tick,30000);
-loadSongs(); loadNotes(); loadMedia();
+loadSongs(); loadNotes(); loadMedia(); loadFeed(); loadFb();
 showPage(location.hash.slice(1) || 'home');
 </script>
 </body>
