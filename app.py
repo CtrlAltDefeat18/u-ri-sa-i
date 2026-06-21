@@ -375,7 +375,7 @@ def media_del(mid):
 
 
 # ── busy feed: posts, reactions, comments ───────────────────────────
-REACTS = {"❤️", "🔥", "😮", "😂", "🥹"}
+REACTS = {"👍", "👎", "🙂", "🙃", "😐", "😢", "🫡", "🤓"}
 
 
 def post_json(p, reacts, comments, me):
